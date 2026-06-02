@@ -1,0 +1,52 @@
+[
+  {
+    "name": "calculator",
+    "description": "Performs basic arithmetic calculations.",
+    "input_schema": {
+      "expression": "string"
+    }
+  },
+  {
+    "name": "read_file",
+    "description": "Reads a plain text file from a given file path.",
+    "input_schema": {
+      "file_path": "string"
+    }
+  },
+  {
+    "name": "csv_reader",
+    "description": "Reads structured CSV files and returns rows and columns.",
+    "input_schema": {
+      "file_path": "string"
+    }
+  },
+  {
+    "name": "text_search",
+    "description": "Searches for a keyword in plain text.",
+    "input_schema": {
+      "text": "string",
+      "keyword": "string"
+    }
+  },
+  {
+    "name": "sql_query",
+    "description": "Executes SQL queries on a toy database.",
+    "input_schema": {
+      "query": "string"
+    }
+  },
+  {
+    "name": "web_search",
+    "description": "Searches the web for general information.",
+    "input_schema": {
+      "query": "string"
+    }
+  },
+  {
+    "name": "run_python",
+    "description": "Runs a small Python code snippet.",
+    "input_schema": {
+      "code": "string"
+    }
+  }
+]

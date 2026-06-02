@@ -1,0 +1,3 @@
+{"trace_id": "trace_001", "predicted_label": "F6_missing_capability_gap", "confidence": 0.75, "evidence": ["Task mentions 'pdf', but required tool 'pdf_table_extractor' is not available."], "new_tool_needed": true}
+{"trace_id": "trace_002", "predicted_label": "F1_reasoning_or_planning_error", "confidence": 0.7, "evidence": ["The task involved CSV data and the csv_reader tool was available, but the agent used the calculator directly on raw CSV content."], "new_tool_needed": false}
+{"trace_id": "trace_003", "predicted_label": "F3_wrong_tool_parameters", "confidence": 0.65, "evidence": ["Tool returned an argument or schema-related error."], "new_tool_needed": false}
