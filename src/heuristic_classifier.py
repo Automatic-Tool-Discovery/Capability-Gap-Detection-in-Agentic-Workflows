@@ -17,6 +17,7 @@ def classify_trace(trace: AgentTrace) -> Prediction:
     errors = " ".join(
         call.error or "" for call in trace.tool_calls
     ).lower()
+    failure_explanation = (trace.failure_explanation or "").lower()
 
     evidence = []
 
@@ -51,11 +52,11 @@ def classify_trace(trace: AgentTrace) -> Prediction:
 
     # F5: documentation/schema error
     if (
-        "documentation" in trace.failure_explanation.lower()
-        or "tool description" in trace.failure_explanation.lower()
-        or "described" in trace.failure_explanation.lower()
-        or "misleading" in trace.failure_explanation.lower()
-        or "schema required" in trace.failure_explanation.lower()
+        "documentation" in failure_explanation
+        or "tool description" in failure_explanation
+        or "described" in failure_explanation
+        or "misleading" in failure_explanation
+        or "schema required" in failure_explanation
     ):
         evidence.append(
             "The failure explanation indicates the tool documentation or schema was misleading."
@@ -67,17 +68,6 @@ def classify_trace(trace: AgentTrace) -> Prediction:
             evidence=evidence,
             new_tool_needed=False,
         )
-
-    # F3: wrong parameters / schema issue
-    if "invalid" in errors or "expected" in errors or "missing argument" in errors:
-        evidence.append("Tool returned an argument or schema-related error.")
-        return Prediction(
-            trace_id=trace.trace_id,
-            predicted_label=FailureType.WRONG_TOOL_PARAMETERS.value,
-            confidence=0.65,
-            evidence=evidence,
-            new_tool_needed=False,
-        )
     
     # F8: environment or state error
     if (
@@ -86,8 +76,8 @@ def classify_trace(trace: AgentTrace) -> Prediction:
         or "not logged in" in errors
         or "authenticationerror" in errors
         or "not authenticated" in errors
-        or "missing from the environment" in trace.failure_explanation.lower()
-        or "environment state" in trace.failure_explanation.lower()
+        or "missing from the environment" in failure_explanation
+        or "environment state" in failure_explanation
     ):
         evidence.append(
             "The correct tool exists, but the environment or state prevents successful execution."
@@ -96,6 +86,17 @@ def classify_trace(trace: AgentTrace) -> Prediction:
             trace_id=trace.trace_id,
             predicted_label=FailureType.ENVIRONMENT_OR_STATE_ERROR.value,
             confidence=0.75,
+            evidence=evidence,
+            new_tool_needed=False,
+        )
+    
+    # F3: wrong parameters / schema issue
+    if "invalid" in errors or "expected" in errors or "missing argument" in errors:
+        evidence.append("Tool returned an argument or schema-related error.")
+        return Prediction(
+            trace_id=trace.trace_id,
+            predicted_label=FailureType.WRONG_TOOL_PARAMETERS.value,
+            confidence=0.65,
             evidence=evidence,
             new_tool_needed=False,
         )
