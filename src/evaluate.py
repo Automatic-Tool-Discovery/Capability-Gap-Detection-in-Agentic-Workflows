@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from sklearn.metrics import classification_report, accuracy_score
 
