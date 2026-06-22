@@ -90,6 +90,8 @@ def classify_trace(trace: AgentTrace) -> Prediction:
     # F6: obvious missing capability cases
     for keyword, missing_tool in MISSING_TOOL_KEYWORDS.items():
         if keyword in task_lower and missing_tool not in trace.available_tools:
+            if any(keyword in tool.lower() for tool in trace.available_tools):
+                continue
             evidence.append(
                 f"Task mentions '{keyword}', but required tool '{missing_tool}' is not available."
             )

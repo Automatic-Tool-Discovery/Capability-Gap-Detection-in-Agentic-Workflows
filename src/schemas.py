@@ -9,6 +9,17 @@ class ToolCall(BaseModel):
     error: Optional[str] = None
 
 
+class Scenario(BaseModel):
+    trace_id: str
+    user_task: str
+    agent_plan: Optional[str] = None
+    mcp_servers: list[str]
+    tool_calls: list[dict[str, Any]]
+    final_response: Optional[str] = None
+    gold_label: Optional[str] = None
+    failure_explanation: Optional[str] = None
+
+
 class AgentTrace(BaseModel):
     trace_id: str
     user_task: str
@@ -18,6 +29,8 @@ class AgentTrace(BaseModel):
     final_response: Optional[str] = None
     gold_label: Optional[str] = None
     failure_explanation: Optional[str] = None
+    mcp_servers: list[str] = []
+    tool_schemas: dict[str, Any] = {}
 
 
 class Prediction(BaseModel):

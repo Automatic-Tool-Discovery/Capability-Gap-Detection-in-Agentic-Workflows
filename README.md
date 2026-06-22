@@ -39,20 +39,92 @@ Determine:
 
 ## Dataset
 
-The current dataset contains 20 manually constructed execution traces.
+The project uses two trace sources:
+
+1. **Manual traces** (`data/traces.jsonl`) — 20 hand-constructed execution traces covering all failure categories.
+2. **MCP traces** (`data/mcp_traces.jsonl`) — traces collected by running scenarios against real MCP servers.
 
 Each trace contains:
 
 - User task
-- Available tools
+- Available tools (from `list_tools()` when collected via MCP)
 - Agent plan
 - Tool calls
 - Observations and errors
 - Final response
 - Gold failure label
 - Failure explanation
+- MCP metadata (`mcp_servers`, `tool_schemas`) for MCP-generated traces
 
-The dataset covers all failure categories defined in the taxonomy.
+## MCP Integration
+
+Tools are exposed through [Model Context Protocol (MCP)](https://modelcontextprotocol.io) servers instead of a static JSON registry.
+
+### MCP servers
+
+| Server | Path | Tools |
+|--------|------|-------|
+| `research_tools` | `mcp_servers/research_tools/server.py` | `calculator`, `read_file`, `csv_reader`, `text_search`, `sql_query`, `web_search`, `run_python` |
+| `extended_tools` | `mcp_servers/extended_tools/server.py` | `summarizer`, `translate_text`, `weather_api`, `currency_converter`, `send_email`, and others |
+
+### Collect MCP traces
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m src.trace_collector
+```
+
+Scenarios are defined in `data/mcp_scenarios.json` (12 scenarios covering all failure categories F0–F8). Each scenario specifies:
+
+- which MCP servers to connect
+- a scripted sequence of tool calls (simulating agent behavior)
+- the expected gold failure label
+
+The collector connects to MCP servers over stdio, calls tools for real, and writes traces to `data/mcp_traces.jsonl`.
+
+### Run classification and evaluation
+
+```bash
+python -m src.main
+python -m src.evaluate
+```
+
+By default, both commands use manual and MCP traces.
+
+### Use MCP servers in Cursor
+
+Add this to your Cursor MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "research_tools": {
+      "command": "python",
+      "args": ["mcp_servers/research_tools/server.py"]
+    },
+    "extended_tools": {
+      "command": "python",
+      "args": ["mcp_servers/extended_tools/server.py"]
+    }
+  }
+}
+```
+
+You can then run tasks in Cursor with real MCP tools and export the resulting tool-call history into the trace format.
+
+## Current Pipeline
+
+User Task
+    ↓
+MCP Servers (tools) + Agent Execution
+    ↓
+Trace Collector → `data/mcp_traces.jsonl`
+    ↓
+Heuristic Classifier
+    ↓
+Failure Category
 
 ## Baseline Method
 
@@ -83,23 +155,4 @@ Overall Accuracy: 90%
 
 The baseline performs well on the current manually curated dataset and establishes a benchmark for future experiments.
 
-## Current Pipeline
-
-User Task
-    ↓
-Agent Execution Trace
-    ↓
-Heuristic Classifier
-    ↓
-Failure Category
-
-Example:
-
-Task: Extract text from handwritten image
-
-Available Tools:
-- read_file
-- summarizer
-
-Prediction:
-F6_missing_capability_gap
+Re-run `python -m src.evaluate` after collecting MCP traces to evaluate on the combined dataset.
