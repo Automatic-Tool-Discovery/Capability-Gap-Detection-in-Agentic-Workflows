@@ -12,10 +12,18 @@ MISSING_TOOL_KEYWORDS = {
 }
 
 
-def classify_trace(trace: AgentTrace) -> Prediction:
+def classify_trace(
+    trace: AgentTrace,
+    *,
+    use_failure_explanation: bool = True,
+) -> Prediction:
     task_lower = trace.user_task.lower()
     errors = " ".join(call.error or "" for call in trace.tool_calls).lower()
-    failure_explanation = (trace.failure_explanation or "").lower()
+    failure_explanation = (
+        (trace.failure_explanation or "").lower()
+        if use_failure_explanation
+        else ""
+    )
 
     evidence = []
 

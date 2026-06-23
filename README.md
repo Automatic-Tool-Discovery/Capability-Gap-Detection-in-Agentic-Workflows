@@ -128,31 +128,80 @@ Failure Category
 
 ## Baseline Method
 
-A heuristic rule-based classifier is implemented as the initial baseline.
+Two rule-based baselines are implemented in `src/heuristic_classifier.py`:
 
-The classifier analyzes:
+| Method | CLI name | Uses `failure_explanation`? | Role |
+|--------|----------|-------------------------------|------|
+| **Heuristic oracle** | `heuristic-oracle` | Yes | Upper bound (uses human-written explanations) |
+| **Heuristic fair** | `heuristic-fair` | No | Honest deployable baseline |
 
-- User task
-- Tool call errors
-- Failure explanations
-- Available tools
+An **LLM baseline** is available in `src/llm_classifier.py` via the [TUD:AI API](https://llm.scads.ai/docs/usage/api/) (`llm-fair`, `llm-oracle`).
 
-and predicts one of the defined failure categories.
+## Evaluation
 
-The baseline serves as a reference point for future LLM-based approaches.
+Evaluation lives in `src/evaluate.py`. It compares predicted labels against human `gold_label` values.
+
+### What gets measured
+
+| Metric | Meaning |
+|--------|---------|
+| **Accuracy** | Exact match on F0–F8 |
+| **Macro / weighted F1** | Multi-class performance |
+| **F6 precision/recall/F1** | Capability-gap class only |
+| **Binary gap detection F1** | F6 vs all other failures |
+
+### Splits (train/test)
+
+| Split | Train | Test | Use when |
+|-------|-------|------|----------|
+| `all` | all | all | Quick sanity check (not generalization) |
+| `holdout-mcp` | 20 synthetic | 12 MCP | **Recommended** — rules trained on hand-written, tested on real MCP |
+| `holdout-synthetic` | 12 MCP | 20 synthetic | Reverse generalization check |
+| `random` | 75% | 25% | Stratified random split |
+| `loo` | n−1 | 1 | Leave-one-out CV (mean metrics) |
+| `cv5` | 80% | 20% | 5-fold stratified CV |
+
+```bash
+# Recommended: test on MCP traces, train/dev on synthetic
+python -m src.evaluate --split holdout-mcp
+
+# Compare fair vs oracle heuristics
+python -m src.evaluate --split holdout-mcp --method heuristic-oracle heuristic-fair
+
+# 5-fold cross-validation
+python -m src.evaluate --split cv5 --method heuristic-fair
+```
+
+Results are written to `outputs/evaluation/summary_<split>.json`.
+
+### LLM baseline (TUD:AI)
+
+```bash
+export SCADS_API_KEY="your-tud-ai-key"   # from https://llm.scads.ai/docs/
+export SCADS_MODEL="alias-ha"            # optional; see https://llm.scads.ai/status/
+
+python -m src.evaluate --split holdout-mcp --method llm-fair
+```
+
+Uses OpenAI-compatible API at `https://llm.scads.ai/v1`. Pick a model with **Tools? ✅** on the [status page](https://llm.scads.ai/status/) for future agent runs; classification only needs chat.
+
+### External benchmark: MCP-Atlas
+
+[MCP-Atlas](https://huggingface.co/datasets/ScaleAI/MCP-Atlas) provides `PROMPT`, `ENABLED_TOOLS`, and `TRAJECTORY` (required tools). We derive synthetic F6 cases by withholding one required tool from the enabled set.
+
+```bash
+pip install datasets pyarrow openai
+python -m src.evaluate --benchmark mcp-atlas --atlas-limit 50 --method heuristic-fair
+```
+
+First run downloads a sample to `data/benchmarks/mcp_atlas_sample.jsonl`. MCPMark is a separate agent benchmark (task success); use it later for full agent runs, not failure taxonomy labels.
 
 ## Evaluation Results
 
-Dataset Size: 20 traces
+Re-run after collecting MCP traces:
 
-Overall Accuracy: 90%
+```bash
+python -m src.evaluate --split all --method heuristic-oracle heuristic-fair
+```
 
-| Metric | Value |
-|----------|----------|
-| Accuracy | 90% |
-| Macro F1 | 0.89 |
-| Weighted F1 | 0.89 |
-
-The baseline performs well on the current manually curated dataset and establishes a benchmark for future experiments.
-
-Re-run `python -m src.evaluate` after collecting MCP traces to evaluate on the combined dataset.
+On the combined 32-trace dataset, heuristic-oracle reaches ~97% accuracy. Use `holdout-mcp` for a more honest generalization estimate.
