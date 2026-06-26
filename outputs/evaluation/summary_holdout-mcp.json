@@ -11,18 +11,5 @@
     "f6_recall": 1.0,
     "f6_f1": 1.0,
     "gap_detection_f1": 1.0
-  },
-  {
-    "method": "llm-fair",
-    "split": "holdout-mcp",
-    "n_train": 20,
-    "n_test": 12,
-    "accuracy": 0.8333333333333334,
-    "macro_f1": 0.7037037037037037,
-    "weighted_f1": 0.7777777777777777,
-    "f6_precision": 1.0,
-    "f6_recall": 1.0,
-    "f6_f1": 1.0,
-    "gap_detection_f1": 1.0
   }
 ]

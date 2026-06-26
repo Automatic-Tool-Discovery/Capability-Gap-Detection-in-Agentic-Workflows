@@ -8,6 +8,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from src import heuristic_classifier, llm_classifier
+from src.evaluation.benchmarks.agentrx import build_agentrx_dataset
 from src.evaluation.benchmarks.mcp_atlas import build_atlas_gap_dataset
 from src.evaluation.metrics import EvaluationResult, evaluate_predictions, format_result
 from src.evaluation.splits import (
@@ -70,6 +71,42 @@ def run_evaluation(
     )
 
 
+def write_predictions(
+    path: Path,
+    test_traces: list[AgentTrace],
+    predictions: list[Prediction],
+    *,
+    method: str,
+    split_name: str,
+) -> None:
+    """Write a per-trace comparison (gold vs predicted) for error inspection."""
+    by_id = {prediction.trace_id: prediction for prediction in predictions}
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        for trace in test_traces:
+            if trace.gold_label is None:
+                continue
+            prediction = by_id[trace.trace_id]
+            correct = trace.gold_label == prediction.predicted_label
+            handle.write(
+                json.dumps(
+                    {
+                        "method": method,
+                        "split": split_name,
+                        "trace_id": trace.trace_id,
+                        "gold_label": trace.gold_label,
+                        "predicted_label": prediction.predicted_label,
+                        "correct": correct,
+                        "confidence": prediction.confidence,
+                        "evidence": prediction.evidence,
+                        "user_task": (trace.user_task or "")[:200],
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
+
+
 def _aggregate_results(results: list[EvaluationResult]) -> dict[str, float]:
     if not results:
         return {}
@@ -111,7 +148,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--benchmark",
-        choices=["none", "mcp-atlas"],
+        choices=["none", "mcp-atlas", "agentrx"],
         default="none",
         help="Optional external benchmark dataset.",
     )
@@ -122,25 +159,53 @@ def main() -> None:
         help="Number of MCP-Atlas tasks to load when --benchmark mcp-atlas.",
     )
     parser.add_argument(
+        "--agentrx-source",
+        choices=["samples", "hf"],
+        default="samples",
+        help="AgentRx data source: public GitHub samples or gated HF benchmark.",
+    )
+    parser.add_argument(
+        "--agentrx-only",
+        action="store_true",
+        help="Evaluate only on AgentRx traces (ignore local synthetic/MCP traces).",
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
         default=OUTPUT_DIR,
         help="Directory for JSON evaluation summaries.",
     )
+    parser.add_argument(
+        "--save-predictions",
+        action="store_true",
+        help="Write per-trace gold-vs-predicted comparisons for error inspection.",
+    )
     args = parser.parse_args()
 
     trace_paths = args.traces if args.traces else DEFAULT_TRACE_PATHS
-    traces = load_traces(trace_paths)
+    traces = [] if args.agentrx_only else load_traces(trace_paths)
     if args.benchmark == "mcp-atlas":
         atlas_traces = build_atlas_gap_dataset(limit=args.atlas_limit)
         traces.extend(atlas_traces)
         print(f"Loaded {len(atlas_traces)} synthetic F6 traces from MCP-Atlas.")
+    elif args.benchmark == "agentrx":
+        oracle = any(method.endswith("oracle") for method in args.method)
+        agentrx_traces = build_agentrx_dataset(
+            source=args.agentrx_source,
+            use_failure_explanation=oracle,
+        )
+        traces.extend(agentrx_traces)
+        print(
+            f"Loaded {len(agentrx_traces)} AgentRx traces "
+            f"(source={args.agentrx_source})."
+        )
 
     if not traces:
         raise SystemExit("No traces found for evaluation.")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     summaries: list[dict] = []
+    summary_suffix = f"_{args.benchmark}" if args.benchmark != "none" else ""
 
     for method in args.method:
         if args.split in {"loo", "cv5"}:
@@ -193,7 +258,22 @@ def main() -> None:
         print("-" * 60)
         summaries.append(result.to_dict())
 
-    summary_path = args.output_dir / f"summary_{args.split}.json"
+        if args.save_predictions:
+            args.output_dir.mkdir(parents=True, exist_ok=True)
+            predictions_path = (
+                args.output_dir
+                / f"predictions_{method}_{split_name}{summary_suffix}.jsonl"
+            )
+            write_predictions(
+                predictions_path,
+                test,
+                result.predictions,
+                method=method,
+                split_name=split_name,
+            )
+            print(f"Wrote per-trace predictions to {predictions_path}")
+
+    summary_path = args.output_dir / f"summary_{args.split}{summary_suffix}.json"
     summary_path.write_text(json.dumps(summaries, indent=2), encoding="utf-8")
     print(f"Wrote summary to {summary_path}")
 

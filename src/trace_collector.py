@@ -21,7 +21,6 @@ DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "data" / "mcp_traces.jsonl"
 
 SERVER_SCRIPTS = {
     "research_tools": PROJECT_ROOT / "mcp_servers" / "research_tools" / "server.py",
-    "extended_tools": PROJECT_ROOT / "mcp_servers" / "extended_tools" / "server.py",
 }
 
 

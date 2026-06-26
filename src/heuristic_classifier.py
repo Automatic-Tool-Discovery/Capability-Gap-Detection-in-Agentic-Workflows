@@ -11,6 +11,15 @@ MISSING_TOOL_KEYWORDS = {
     "transcribe": "audio_transcriber",
 }
 
+CAPABILITY_ALIASES: dict[str, set[str]] = {
+    "pdf": {"pdf_table_extractor", "pdf_reader", "pdf_parser", "pdf_extractor"},
+    "ocr": {"ocr_image_reader", "ocr", "image_ocr"},
+    "image": {"ocr_image_reader", "ocr", "image_ocr", "object_detection"},
+    "email": {"email_sender", "send_email", "search_emails"},
+    "audio": {"audio_transcriber", "speech_to_text", "transcribe_audio"},
+    "transcribe": {"audio_transcriber", "speech_to_text", "transcribe_audio"},
+}
+
 
 def classify_trace(
     trace: AgentTrace,
@@ -98,7 +107,8 @@ def classify_trace(
     # F6: obvious missing capability cases
     for keyword, missing_tool in MISSING_TOOL_KEYWORDS.items():
         if keyword in task_lower and missing_tool not in trace.available_tools:
-            if any(keyword in tool.lower() for tool in trace.available_tools):
+            aliases = CAPABILITY_ALIASES.get(keyword, {missing_tool})
+            if any(tool in aliases for tool in trace.available_tools):
                 continue
             evidence.append(
                 f"Task mentions '{keyword}', but required tool '{missing_tool}' is not available."

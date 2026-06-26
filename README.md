@@ -60,12 +60,15 @@ Each trace contains:
 
 Tools are exposed through [Model Context Protocol (MCP)](https://modelcontextprotocol.io) servers instead of a static JSON registry.
 
-### MCP servers
+### MCP server
+
+All tools live in one MCP server:
 
 | Server | Path | Tools |
 |--------|------|-------|
-| `research_tools` | `mcp_servers/research_tools/server.py` | `calculator`, `read_file`, `csv_reader`, `text_search`, `sql_query`, `web_search`, `run_python` |
-| `extended_tools` | `mcp_servers/extended_tools/server.py` | `summarizer`, `translate_text`, `weather_api`, `currency_converter`, `send_email`, and others |
+| `research_tools` | `mcp_servers/research_tools/server.py` | `read_file`, `calculator`, `csv_reader`, `sql_query`, `summarizer`, `weather_api`, `send_email`, and others (17 total) |
+
+Capability gaps (F6) come from **missing tool types** in the server (e.g. no OCR or PDF extractor), not from connecting multiple servers.
 
 ### Collect MCP traces
 
@@ -103,10 +106,6 @@ Add this to your Cursor MCP settings:
     "research_tools": {
       "command": "python",
       "args": ["mcp_servers/research_tools/server.py"]
-    },
-    "extended_tools": {
-      "command": "python",
-      "args": ["mcp_servers/extended_tools/server.py"]
     }
   }
 }
@@ -195,6 +194,68 @@ python -m src.evaluate --benchmark mcp-atlas --atlas-limit 50 --method heuristic
 ```
 
 First run downloads a sample to `data/benchmarks/mcp_atlas_sample.jsonl`. MCPMark is a separate agent benchmark (task success); use it later for full agent runs, not failure taxonomy labels.
+
+### Baseline benchmark: AgentRx (τ-bench)
+
+[AgentRx](https://github.com/microsoft/AgentRx) is the baseline paper: it diagnoses *why* an agent failed from its trajectory, using a 10-category taxonomy on real **τ-bench** retail traces. The adapter (`src/evaluation/benchmarks/agentrx.py`) loads AgentRx trajectories, maps their taxonomy to our F0–F8, and lets us run our classifiers on the same data.
+
+```bash
+# Public GitHub sample trajectories (ungated, label from filename)
+python -m src.evaluate --benchmark agentrx --agentrx-source samples --agentrx-only \
+  --method heuristic-fair --split all
+
+# Full gated benchmark (115 failures) — requires HF auth first:
+#   1. Accept terms at https://huggingface.co/datasets/microsoft/AgentRx
+#   2. huggingface-cli login   (or export HF_TOKEN=...)
+python -m src.evaluate --benchmark agentrx --agentrx-source hf --agentrx-only \
+  --method llm-fair --split all
+```
+
+Results are written to `outputs/evaluation/summary_<split>_agentrx.json`.
+
+**Taxonomy mapping (AgentRx → ours).** The mapping is intentionally lossy and is itself a finding — AgentRx splits reasoning failures more finely than we do, and we have classes (F0, F5) it lacks.
+
+| AgentRx category | Our label |
+|------------------|-----------|
+| Intent Not Supported | **F6 missing capability gap** |
+| Invalid Invocation | F3 wrong tool parameters |
+| Underspecified User Intent | F7 insufficient user information |
+| System Failure | F4 tool runtime error |
+| Guardrails Triggered | F8 environment or state error |
+| Instruction/Plan Adherence, Invention of New Info, Misinterpretation of Tool Output, Intent-Plan Misalignment, Inconclusive | F1 reasoning or planning error |
+
+**Key result (full gated set, 29 τ-retail failures).** Both baselines collapse on real trajectories — in different ways:
+
+| Method | Accuracy | F6 precision | F6 recall | F6 F1 |
+|--------|----------|--------------|-----------|-------|
+| heuristic-fair | **0.207** | 0.333 | 0.500 | 0.400 |
+| llm-fair (`alias-ha`, small) | 0.069 | 0.118 | 1.000 | 0.211 |
+| llm-fair (`alias-huge-no-thinking`) | **0.207** | 0.143 | 0.500 | 0.222 |
+
+`alias-huge` (with thinking) hangs on the long real trajectories — use `alias-huge-no-thinking` for classification.
+
+**Why the heuristic fails (from per-trace inspection).** The dominant error is not misfiring rules — it is **blindness to semantic failures**. On 20 of 29 real traces the heuristic predicts **F0 (success)**, because every tool call returned without an "Error:" string. Real τ-bench failures are semantic (didn't authenticate, premature transfer, wrong reasoning), not tool crashes, so an error-string-based classifier sees a clean run and declares success:
+
+| Gold → Predicted | Count | Why |
+|------------------|-------|-----|
+| F1 → F0 | 11 | reasoning errors, tools ran fine |
+| F7 → F0 | 7 | underspecified intent, tools ran fine |
+| F6 → F0 | 1 | policy gap, tools ran fine |
+| F4 → F0 | 1 | — |
+
+The one "correct" F6 (`tau_retail_105`) is a **false positive that happened to be right**: the rule matched the word *email* in the customer's email address and concluded "no email tool → F6". The same bogus rule misfired on an F1 and an F7 trace. The genuine F6 (`tau_retail_47`, premature transfer to human) was labeled F0.
+
+**Heuristic vs strong LLM — same score (21%), opposite failures.** The strong LLM ties the heuristic on accuracy but for completely different reasons:
+
+- **Heuristic**: blind — labels 20/29 as F0 (success) because no tool threw an error.
+- **Strong LLM**: actually reads the trajectory (its evidence is specific and often correct, e.g. *"agent only modified the keyboard and never changed the shoes"*), but **disagrees with the gold taxonomy** — especially on F7 (Underspecified User Intent), which it reads as F1 (reasoning) or F6 (capability gap).
+
+**The deeper finding: much of the "error" is taxonomy disagreement, not model failure.** Example: `tau_retail_91` is gold **F7**, but the LLM labels it **F6** with a sound justification — *"no return/exchange/refund tools exist in available_tools."* That is a defensible capability-gap call. This means (a) F6 detection by the LLM is **semantically grounded** (unlike the heuristic's accidental email-string match), and (b) fair comparison requires either reconciling the two taxonomies or evaluating on the cleaner **binary capability-gap task**. Reconciling F0–F8 with AgentRx's 10 categories is itself a thesis contribution.
+
+**Takeaways for the thesis:**
+1. Error-string heuristics cannot diagnose semantic/policy failures — they need to reason over the trajectory and policy.
+2. A strong LLM reasons well but is bottlenecked by taxonomy alignment, motivating an F6-focused, binary-first evaluation.
+3. Use `--save-predictions` to regenerate the per-trace comparisons in `outputs/evaluation/predictions_*.jsonl`.
 
 ## Evaluation Results
 
