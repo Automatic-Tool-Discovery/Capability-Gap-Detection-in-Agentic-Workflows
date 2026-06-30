@@ -31,6 +31,21 @@ class AgentTrace(BaseModel):
     failure_explanation: Optional[str] = None
     mcp_servers: list[str] = []
     tool_schemas: dict[str, Any] = {}
+    # Alignment fields (shared across benchmarks).
+    source: Optional[str] = None
+    domain: Optional[str] = None
+    capabilities: list[str] = []
+
+
+class CapabilityRequest(BaseModel):
+    """A structured spec for a missing tool that would close a capability gap."""
+
+    name: str
+    capability: str
+    description: str
+    inputs: list[dict[str, Any]] = []
+    outputs: list[dict[str, Any]] = []
+    rationale: Optional[str] = None
 
 
 class Prediction(BaseModel):
@@ -39,3 +54,6 @@ class Prediction(BaseModel):
     confidence: float
     evidence: list[str]
     new_tool_needed: bool
+    # Populated only when a capability gap (F6) is detected.
+    missing_capabilities: list[str] = []
+    capability_requests: list[CapabilityRequest] = []

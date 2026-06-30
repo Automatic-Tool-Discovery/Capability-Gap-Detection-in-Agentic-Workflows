@@ -17,6 +17,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from src.evaluation.capabilities import tools_to_capabilities
 from src.schemas import AgentTrace, ToolCall
 from src.taxonomy import FailureType
 
@@ -109,6 +110,9 @@ def row_to_gap_traces(row: dict[str, Any], *, max_per_task: int = 2) -> list[Age
                 ),
                 mcp_servers=["mcp-atlas"],
                 tool_schemas={},
+                source="mcp-atlas",
+                domain="mcp_atlas",
+                capabilities=tools_to_capabilities(available),
             )
         )
     return traces

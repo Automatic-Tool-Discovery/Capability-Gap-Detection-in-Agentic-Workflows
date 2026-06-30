@@ -33,6 +33,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from src.evaluation.capabilities import TAU_RETAIL_TOOLS, tools_to_capabilities
 from src.schemas import AgentTrace, ToolCall
 from src.taxonomy import FailureType
 
@@ -166,10 +167,14 @@ def trajectory_to_trace(
     failure_explanation: str | None = None,
 ) -> AgentTrace:
     parsed = parse_trajectory(obj)
+    # Alignment: use the full retail toolset as the available tools, not just the
+    # tools this trace happened to call, so capability-gap detection can ask
+    # "was the needed tool available at all?".
+    available_tools = sorted(set(TAU_RETAIL_TOOLS) | set(parsed["available_tools"]))
     return AgentTrace(
         trace_id=trace_id,
         user_task=parsed["user_task"],
-        available_tools=parsed["available_tools"],
+        available_tools=available_tools,
         agent_plan=None,
         tool_calls=parsed["tool_calls"],
         final_response=parsed["final_response"],
@@ -177,6 +182,9 @@ def trajectory_to_trace(
         failure_explanation=failure_explanation,
         mcp_servers=["agentrx-tau-retail"],
         tool_schemas={},
+        source="agentrx",
+        domain="tau_retail",
+        capabilities=tools_to_capabilities(available_tools),
     )
 
 
@@ -364,11 +372,17 @@ def load_hf_traces(
             trajectory.get("instruction", ""),
             trajectory.get("steps", []) or [],
         )
+        # Alignment: for tau_retail use the full domain toolset; otherwise fall
+        # back to the observed tools.
+        if domain == "tau_retail":
+            available_tools = sorted(set(TAU_RETAIL_TOOLS) | set(parsed["available_tools"]))
+        else:
+            available_tools = parsed["available_tools"]
         traces.append(
             AgentTrace(
                 trace_id=f"agentrx_{domain}_{traj_id}",
                 user_task=parsed["user_task"],
-                available_tools=parsed["available_tools"],
+                available_tools=available_tools,
                 agent_plan=None,
                 tool_calls=parsed["tool_calls"],
                 final_response=parsed["final_response"],
@@ -376,6 +390,9 @@ def load_hf_traces(
                 failure_explanation=explanation,
                 mcp_servers=[f"agentrx-{domain}"],
                 tool_schemas={},
+                source="agentrx",
+                domain=domain,
+                capabilities=tools_to_capabilities(available_tools),
             )
         )
     return traces

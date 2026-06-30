@@ -1,5 +1,21 @@
-.venv/
+# Python
 __pycache__/
-*.pyc
-.DS_Store
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Secrets / local config
 .env
+.env.*
+
+# HuggingFace / model caches
+.cache/
+*.lock
+
+# OS
+.DS_Store

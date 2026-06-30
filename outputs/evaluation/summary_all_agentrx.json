@@ -1,15 +1,15 @@
 [
   {
-    "method": "llm-fair",
+    "method": "heuristic-fair",
     "split": "all",
     "n_train": 29,
     "n_test": 29,
     "accuracy": 0.20689655172413793,
-    "macro_f1": 0.08465608465608465,
-    "weighted_f1": 0.23243933588761173,
-    "f6_precision": 0.14285714285714285,
+    "macro_f1": 0.1391304347826087,
+    "weighted_f1": 0.28245877061469266,
+    "f6_precision": 0.3333333333333333,
     "f6_recall": 0.5,
-    "f6_f1": 0.2222222222222222,
-    "gap_detection_f1": 0.2222222222222222
+    "f6_f1": 0.4,
+    "gap_detection_f1": 0.4
   }
 ]

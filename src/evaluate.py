@@ -7,13 +7,12 @@ import json
 from collections.abc import Callable
 from pathlib import Path
 
-from src import heuristic_classifier, llm_classifier
+from src import capability_matcher, llm_classifier
 from src.evaluation.benchmarks.agentrx import build_agentrx_dataset
 from src.evaluation.benchmarks.mcp_atlas import build_atlas_gap_dataset
 from src.evaluation.metrics import EvaluationResult, evaluate_predictions, format_result
 from src.evaluation.splits import (
-    MCP_PATH,
-    SYNTHETIC_PATH,
+    LIVE_PATH,
     get_splitter,
     iter_leave_one_out,
     iter_stratified_kfold,
@@ -22,18 +21,10 @@ from src.evaluation.splits import (
 )
 from src.schemas import AgentTrace, Prediction
 
-DEFAULT_TRACE_PATHS = [SYNTHETIC_PATH, MCP_PATH]
+DEFAULT_TRACE_PATHS = [LIVE_PATH]
 OUTPUT_DIR = Path("outputs/evaluation")
 
 ClassifierFn = Callable[[AgentTrace], Prediction]
-
-
-def _heuristic_oracle(trace: AgentTrace) -> Prediction:
-    return heuristic_classifier.classify_trace(trace, use_failure_explanation=True)
-
-
-def _heuristic_fair(trace: AgentTrace) -> Prediction:
-    return heuristic_classifier.classify_trace(trace, use_failure_explanation=False)
 
 
 def _llm_fair(trace: AgentTrace) -> Prediction:
@@ -44,11 +35,22 @@ def _llm_oracle(trace: AgentTrace) -> Prediction:
     return llm_classifier.classify_trace(trace, use_failure_explanation=True)
 
 
+def _capmatch_fair(trace: AgentTrace) -> Prediction:
+    return capability_matcher.classify_trace(trace, use_failure_explanation=False)
+
+
+def _capmatch_oracle(trace: AgentTrace) -> Prediction:
+    return capability_matcher.classify_trace(trace, use_failure_explanation=True)
+
+
+# Baseline = LLM-as-judge (mirrors AgentRx). Our method = capability matcher,
+# which detects gaps via required-vs-available capabilities and emits a
+# capability request, deferring to the baseline on non-gap traces.
 METHODS: dict[str, ClassifierFn] = {
-    "heuristic-oracle": _heuristic_oracle,
-    "heuristic-fair": _heuristic_fair,
     "llm-fair": _llm_fair,
     "llm-oracle": _llm_oracle,
+    "capmatch-fair": _capmatch_fair,
+    "capmatch-oracle": _capmatch_oracle,
 }
 
 
@@ -88,23 +90,24 @@ def write_predictions(
                 continue
             prediction = by_id[trace.trace_id]
             correct = trace.gold_label == prediction.predicted_label
-            handle.write(
-                json.dumps(
-                    {
-                        "method": method,
-                        "split": split_name,
-                        "trace_id": trace.trace_id,
-                        "gold_label": trace.gold_label,
-                        "predicted_label": prediction.predicted_label,
-                        "correct": correct,
-                        "confidence": prediction.confidence,
-                        "evidence": prediction.evidence,
-                        "user_task": (trace.user_task or "")[:200],
-                    },
-                    ensure_ascii=False,
-                )
-                + "\n"
-            )
+            record = {
+                "method": method,
+                "split": split_name,
+                "trace_id": trace.trace_id,
+                "gold_label": trace.gold_label,
+                "predicted_label": prediction.predicted_label,
+                "correct": correct,
+                "confidence": prediction.confidence,
+                "evidence": prediction.evidence,
+                "user_task": (trace.user_task or "")[:200],
+            }
+            if prediction.missing_capabilities:
+                record["missing_capabilities"] = prediction.missing_capabilities
+            if prediction.capability_requests:
+                record["capability_requests"] = [
+                    req.model_dump() for req in prediction.capability_requests
+                ]
+            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
 def _aggregate_results(results: list[EvaluationResult]) -> dict[str, float]:
@@ -130,12 +133,12 @@ def main() -> None:
         "--method",
         choices=sorted(METHODS),
         nargs="+",
-        default=["heuristic-oracle", "heuristic-fair"],
+        default=["llm-fair"],
         help="Classifier(s) to evaluate.",
     )
     parser.add_argument(
         "--split",
-        choices=["all", "holdout-mcp", "holdout-synthetic", "random", "loo", "cv5"],
+        choices=["all", "random", "loo", "cv5"],
         default="all",
         help="Evaluation split strategy.",
     )
@@ -144,7 +147,7 @@ def main() -> None:
         nargs="*",
         type=Path,
         default=None,
-        help="Local trace files (default: synthetic + MCP traces).",
+        help="Local trace files (default: live MCP traces).",
     )
     parser.add_argument(
         "--benchmark",

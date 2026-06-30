@@ -1,0 +1,27 @@
+[
+  {
+    "task_id": "weather_berlin",
+    "user_task": "What is the current weather in Berlin?",
+    "required_tool": "weather_api"
+  },
+  {
+    "task_id": "translate_de",
+    "user_task": "Translate the sentence 'Good morning, how are you?' into German.",
+    "required_tool": "translate_text"
+  },
+  {
+    "task_id": "currency_usd_eur",
+    "user_task": "Convert 100 US dollars to euros and tell me the result.",
+    "required_tool": "currency_converter"
+  },
+  {
+    "task_id": "percent_calc",
+    "user_task": "What is 18% of 350?",
+    "required_tools": ["calculator", "run_python", "sql_query"]
+  },
+  {
+    "task_id": "send_update_email",
+    "user_task": "Send an email to alice@example.com with the subject 'Update' and the body 'The report is ready.'",
+    "required_tool": "send_email"
+  }
+]

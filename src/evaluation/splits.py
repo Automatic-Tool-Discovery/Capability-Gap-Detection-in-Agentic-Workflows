@@ -10,8 +10,7 @@ from sklearn.model_selection import LeaveOneOut, StratifiedKFold, train_test_spl
 
 from src.schemas import AgentTrace
 
-SYNTHETIC_PATH = Path("data/traces.jsonl")
-MCP_PATH = Path("data/mcp_traces.jsonl")
+LIVE_PATH = Path("data/live_traces.jsonl")
 
 
 def load_traces(paths: list[Path]) -> list[AgentTrace]:
@@ -35,26 +34,6 @@ Split = tuple[list[AgentTrace], list[AgentTrace]]
 
 def split_all(traces: list[AgentTrace]) -> Split:
     return traces, traces
-
-
-def split_holdout_mcp(traces: list[AgentTrace]) -> Split:
-    train = [t for t in traces if not t.trace_id.startswith("mcp_")]
-    test = [t for t in traces if t.trace_id.startswith("mcp_")]
-    if not train or not test:
-        raise ValueError(
-            "holdout-mcp requires both synthetic (trace_*) and MCP (mcp_*) traces."
-        )
-    return train, test
-
-
-def split_holdout_synthetic(traces: list[AgentTrace]) -> Split:
-    train = [t for t in traces if t.trace_id.startswith("mcp_")]
-    test = [t for t in traces if not t.trace_id.startswith("mcp_")]
-    if not train or not test:
-        raise ValueError(
-            "holdout-synthetic requires both synthetic and MCP traces."
-        )
-    return train, test
 
 
 def split_random(
@@ -107,8 +86,6 @@ def iter_stratified_kfold(
 
 SPLITTERS: dict[str, Callable[[list[AgentTrace]], Split]] = {
     "all": split_all,
-    "holdout-mcp": split_holdout_mcp,
-    "holdout-synthetic": split_holdout_synthetic,
 }
 
 
