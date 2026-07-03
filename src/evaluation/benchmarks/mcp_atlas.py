@@ -44,21 +44,42 @@ def _parse_tool_list(raw: str) -> list[str]:
     return [part.strip() for part in re.split(r"[,\n]+", raw) if part.strip()]
 
 
+def _extract_tool_names_from_step(step: dict[str, Any]) -> list[str]:
+    """Pull tool names from one trajectory step (several MCP-Atlas formats)."""
+    names: list[str] = []
+    for key in ("tool", "tool_name", "name"):
+        value = step.get(key)
+        if value and isinstance(value, str):
+            names.append(value)
+
+    for call in step.get("tool_calls") or []:
+        if not isinstance(call, dict):
+            continue
+        function = call.get("function")
+        if isinstance(function, dict):
+            name = function.get("name")
+            if name:
+                names.append(str(name))
+                continue
+        name = call.get("name")
+        if name:
+            names.append(str(name))
+    return names
+
+
 def _parse_trajectory_tools(raw: str) -> list[str]:
     tools: list[str] = []
     raw = raw.strip()
     if not raw:
         return tools
 
-    # JSON list of step dicts
+    # JSON list of step dicts (MCP-Atlas uses OpenAI-style tool_calls per step).
     try:
         parsed = json.loads(raw)
         if isinstance(parsed, list):
             for step in parsed:
                 if isinstance(step, dict):
-                    name = step.get("tool") or step.get("tool_name") or step.get("name")
-                    if name:
-                        tools.append(str(name))
+                    tools.extend(_extract_tool_names_from_step(step))
             if tools:
                 return list(dict.fromkeys(tools))
     except json.JSONDecodeError:
