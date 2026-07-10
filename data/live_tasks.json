@@ -5,23 +5,28 @@
     "required_tool": "weather_api"
   },
   {
-    "task_id": "translate_de",
-    "user_task": "Translate the sentence 'Good morning, how are you?' into German.",
-    "required_tool": "translate_text"
-  },
-  {
     "task_id": "currency_usd_eur",
     "user_task": "Convert 100 US dollars to euros and tell me the result.",
     "required_tool": "currency_converter"
   },
   {
-    "task_id": "percent_calc",
-    "user_task": "What is 18% of 350?",
-    "required_tools": ["calculator", "run_python", "sql_query"]
-  },
-  {
     "task_id": "send_update_email",
     "user_task": "Send an email to alice@example.com with the subject 'Update' and the body 'The report is ready.'",
     "required_tool": "send_email"
+  },
+  {
+    "task_id": "calendar_event_auth",
+    "user_task": "Create a calendar event called 'Research sync' tomorrow at 10:00 with bob@example.com.",
+    "required_tool": "create_calendar_event"
+  },
+  {
+    "task_id": "restaurant_booking",
+    "user_task": "Book a restaurant table for 4 guests tomorrow at 19:00.",
+    "required_tool": "book_restaurant"
+  },
+  {
+    "task_id": "recent_email_lookup",
+    "user_task": "Find emails from supervisor@example.com from the last 24 hours and summarize whether there is a new meeting request.",
+    "required_tool": "search_emails"
   }
 ]

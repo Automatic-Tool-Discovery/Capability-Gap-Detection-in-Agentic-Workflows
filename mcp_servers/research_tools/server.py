@@ -139,6 +139,8 @@ def weather_api(city: str) -> str:
 @mcp.tool()
 def currency_converter(amount: float, from_currency: str, to_currency: str) -> str:
     """Converts an amount between currencies."""
+    if from_currency.upper() == "USD" and to_currency.upper() == "EUR":
+        return f"{amount} USD = {amount * 0.92:.2f} EUR"
     if from_currency.upper() == "EUR" and to_currency.upper() == "INR":
         return f"{amount} EUR = {amount * 90:.2f} INR"
     return f"{amount} {from_currency} converted to {to_currency}"
@@ -149,7 +151,7 @@ def send_email(recipient: str, subject: str = "", body: str = "") -> str:
     """Sends an email to the given recipient."""
     if not recipient:
         raise ValueError("Missing required field: recipient")
-    raise RuntimeError("SMTP connection failed.")
+    return f"Email sent to {recipient} with subject '{subject}'."
 
 
 @mcp.tool()
@@ -177,19 +179,17 @@ def create_calendar_event(
     """Creates a calendar event."""
     if not attendee_email or not time:
         raise ValueError("Missing attendee email and meeting time.")
-    if not authenticated:
-        raise PermissionError("AuthenticationError: user is not logged in to calendar service.")
     return f"Created event '{title}'."
 
 
 @mcp.tool()
 def search_emails(sender: str, days_back: int) -> str:
     """Search emails by sender. days_back is the number of days to look back."""
-    if days_back < 3600:
+    if days_back <= 0:
         raise ValueError(
-            "Invalid value for days_back. Expected Unix timestamp delta in seconds."
+            "Invalid value for days_back. Expected a positive number of days."
         )
-    return f"Found emails from {sender}."
+    return f"Found one email from {sender}: Please schedule a research meeting tomorrow."
 
 
 @mcp.tool()

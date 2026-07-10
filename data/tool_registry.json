@@ -1,0 +1,44 @@
+[
+  {
+    "tool": "weather_api",
+    "capability": "weather_api",
+    "gap_type": "missing_live_data_tool",
+    "non_substitutable": true,
+    "why": "Current weather cannot be recovered reliably from model memory."
+  },
+  {
+    "tool": "currency_converter",
+    "capability": "currency_conversion",
+    "gap_type": "missing_live_data_tool",
+    "non_substitutable": true,
+    "why": "Current exchange rates require an external data source."
+  },
+  {
+    "tool": "send_email",
+    "capability": "send_email",
+    "gap_type": "missing_authenticated_action",
+    "non_substitutable": true,
+    "why": "Sending email requires an external side-effecting service."
+  },
+  {
+    "tool": "create_calendar_event",
+    "capability": "calendar_event_creation",
+    "gap_type": "missing_authenticated_action",
+    "non_substitutable": true,
+    "why": "Calendar mutation requires access to a calendar service."
+  },
+  {
+    "tool": "book_restaurant",
+    "capability": "reservation_booking",
+    "gap_type": "missing_external_action",
+    "non_substitutable": true,
+    "why": "A real booking requires an external reservation system."
+  },
+  {
+    "tool": "search_emails",
+    "capability": "email_search",
+    "gap_type": "missing_private_data_access",
+    "non_substitutable": true,
+    "why": "Private mailbox content cannot be reconstructed from model knowledge."
+  }
+]

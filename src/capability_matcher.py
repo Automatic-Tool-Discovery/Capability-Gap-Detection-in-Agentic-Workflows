@@ -24,7 +24,6 @@ The module is testable offline: pass a ``complete`` callable to avoid any networ
 from __future__ import annotations
 
 import json
-import os
 import re
 from typing import Any, Callable
 

@@ -1,0 +1,62 @@
+[
+  {
+    "case_id": "mcp_atlas_689f4d693e212e8ef3390731_remove_github_search_repositories",
+    "source_task_id": "689f4d693e212e8ef3390731",
+    "hidden_required_tools": [
+      "github_search_repositories"
+    ],
+    "baseline_csv": "outputs/mcp_atlas_runs/baseline_mcp_atlas_689f4d693e212e8ef3390731_remove_github_search_repositories.csv",
+    "ablated_csv": "outputs/mcp_atlas_runs/ablated_mcp_atlas_689f4d693e212e8ef3390731_remove_github_search_repositories.csv",
+    "baseline_output": "completion_results/baseline_mcp_atlas_689f4d693e212e8ef3390731_remove_github_search_repositories.csv",
+    "ablated_output": "completion_results/ablated_mcp_atlas_689f4d693e212e8ef3390731_remove_github_search_repositories.csv",
+    "status": "ready_for_mcp_atlas_harness"
+  },
+  {
+    "case_id": "mcp_atlas_688a441c1a0d2e5c93853e76_remove_arxiv_search_papers",
+    "source_task_id": "688a441c1a0d2e5c93853e76",
+    "hidden_required_tools": [
+      "arxiv_search_papers"
+    ],
+    "baseline_csv": "outputs/mcp_atlas_runs/baseline_mcp_atlas_688a441c1a0d2e5c93853e76_remove_arxiv_search_papers.csv",
+    "ablated_csv": "outputs/mcp_atlas_runs/ablated_mcp_atlas_688a441c1a0d2e5c93853e76_remove_arxiv_search_papers.csv",
+    "baseline_output": "completion_results/baseline_mcp_atlas_688a441c1a0d2e5c93853e76_remove_arxiv_search_papers.csv",
+    "ablated_output": "completion_results/ablated_mcp_atlas_688a441c1a0d2e5c93853e76_remove_arxiv_search_papers.csv",
+    "status": "ready_for_mcp_atlas_harness"
+  },
+  {
+    "case_id": "mcp_atlas_68925f01db31fe35560e3e97_remove_exa_web_search_exa",
+    "source_task_id": "68925f01db31fe35560e3e97",
+    "hidden_required_tools": [
+      "exa_web_search_exa"
+    ],
+    "baseline_csv": "outputs/mcp_atlas_runs/baseline_mcp_atlas_68925f01db31fe35560e3e97_remove_exa_web_search_exa.csv",
+    "ablated_csv": "outputs/mcp_atlas_runs/ablated_mcp_atlas_68925f01db31fe35560e3e97_remove_exa_web_search_exa.csv",
+    "baseline_output": "completion_results/baseline_mcp_atlas_68925f01db31fe35560e3e97_remove_exa_web_search_exa.csv",
+    "ablated_output": "completion_results/ablated_mcp_atlas_68925f01db31fe35560e3e97_remove_exa_web_search_exa.csv",
+    "status": "ready_for_mcp_atlas_harness"
+  },
+  {
+    "case_id": "mcp_atlas_689bd255c0422b257e7dfcf4_remove_fetch_fetch",
+    "source_task_id": "689bd255c0422b257e7dfcf4",
+    "hidden_required_tools": [
+      "fetch_fetch"
+    ],
+    "baseline_csv": "outputs/mcp_atlas_runs/baseline_mcp_atlas_689bd255c0422b257e7dfcf4_remove_fetch_fetch.csv",
+    "ablated_csv": "outputs/mcp_atlas_runs/ablated_mcp_atlas_689bd255c0422b257e7dfcf4_remove_fetch_fetch.csv",
+    "baseline_output": "completion_results/baseline_mcp_atlas_689bd255c0422b257e7dfcf4_remove_fetch_fetch.csv",
+    "ablated_output": "completion_results/ablated_mcp_atlas_689bd255c0422b257e7dfcf4_remove_fetch_fetch.csv",
+    "status": "ready_for_mcp_atlas_harness"
+  },
+  {
+    "case_id": "mcp_atlas_689e0b1d9c8e2ac413c1f25c_remove_cli-mcp-server_show_security_rules",
+    "source_task_id": "689e0b1d9c8e2ac413c1f25c",
+    "hidden_required_tools": [
+      "cli-mcp-server_show_security_rules"
+    ],
+    "baseline_csv": "outputs/mcp_atlas_runs/baseline_mcp_atlas_689e0b1d9c8e2ac413c1f25c_remove_cli-mcp-server_show_security_rules.csv",
+    "ablated_csv": "outputs/mcp_atlas_runs/ablated_mcp_atlas_689e0b1d9c8e2ac413c1f25c_remove_cli-mcp-server_show_security_rules.csv",
+    "baseline_output": "completion_results/baseline_mcp_atlas_689e0b1d9c8e2ac413c1f25c_remove_cli-mcp-server_show_security_rules.csv",
+    "ablated_output": "completion_results/ablated_mcp_atlas_689e0b1d9c8e2ac413c1f25c_remove_cli-mcp-server_show_security_rules.csv",
+    "status": "ready_for_mcp_atlas_harness"
+  }
+]
