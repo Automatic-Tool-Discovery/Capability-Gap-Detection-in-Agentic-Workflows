@@ -1,4 +1,11 @@
-"""Train/test split strategies for trace evaluation."""
+"""Trace loading and train/test split strategies.
+
+Evaluation begins here when ``src.evaluate`` needs local trace data. The loader
+reads JSONL files into ``AgentTrace`` models, then the split helpers decide which
+records are used for training context vs. testing. The current classifiers are
+mostly zero/few-shot, but these split names keep experiments comparable across
+live MCP traces and external benchmark adapters.
+"""
 
 from __future__ import annotations
 

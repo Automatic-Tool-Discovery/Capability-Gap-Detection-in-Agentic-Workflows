@@ -1,3 +1,12 @@
+"""Canonical failure taxonomy used by classifiers and benchmarks.
+
+The project maps every local trace, live MCP run, AgentRx example, and MCP-Atlas
+ablation into this single F0-F8 label space. ``F6_missing_capability_gap`` is the
+research target: it means the task required a capability that no available tool
+provided. The rest of the labels keep non-gap failures comparable to AgentRx-style
+diagnosis.
+"""
+
 from enum import Enum
 
 

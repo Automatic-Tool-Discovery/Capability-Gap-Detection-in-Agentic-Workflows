@@ -7,6 +7,9 @@ MCP-Atlas (https://huggingface.co/datasets/ScaleAI/MCP-Atlas) exposes, per task:
 
 We derive synthetic F6 cases by withholding one required tool from ENABLED_TOOLS and
 asking whether a classifier detects a missing capability.
+
+The resulting records are converted into the shared ``AgentTrace`` schema so
+``src.evaluate`` can score them exactly like live MCP traces and AgentRx traces.
 """
 
 from __future__ import annotations

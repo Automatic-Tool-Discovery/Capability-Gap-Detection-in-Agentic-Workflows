@@ -1,4 +1,11 @@
-"""LLM-based failure classifier using the TUD:AI OpenAI-compatible API."""
+"""LLM-as-judge baseline for F0-F8 failure classification.
+
+This module sends an ``AgentTrace`` to a chat model through the TUD:AI
+OpenAI-compatible API and asks for one taxonomy label, confidence, evidence, and
+whether a new tool is needed. It is the project's baseline method and also acts
+as the fallback used by ``src.capability_matcher`` when no missing capability is
+detected.
+"""
 
 from __future__ import annotations
 

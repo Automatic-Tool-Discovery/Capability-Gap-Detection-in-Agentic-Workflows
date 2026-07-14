@@ -1,4 +1,10 @@
-"""Evaluation metrics for failure classification."""
+"""Evaluation metrics for failure and capability-gap classification.
+
+This module compares ``Prediction`` objects against gold ``AgentTrace`` labels.
+It reports ordinary multiclass metrics over F0-F8 plus capability-specific
+numbers for F6, including binary gap detection F1. ``src.evaluate`` calls these
+helpers after running either the LLM baseline or the capability matcher.
+"""
 
 from __future__ import annotations
 

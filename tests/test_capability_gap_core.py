@@ -1,3 +1,12 @@
+"""Regression tests for the capability-gap pipeline.
+
+These tests cover the project pieces that should work without a live LLM call:
+capability normalization, MCP-Atlas gap construction, metric calculation,
+offline capability-matcher behavior with a fake model response, and export of
+baseline/ablated MCP-Atlas CSV inputs. They connect the source modules together
+the same way the evaluation scripts do, but keep everything deterministic.
+"""
+
 import json
 import tempfile
 import unittest

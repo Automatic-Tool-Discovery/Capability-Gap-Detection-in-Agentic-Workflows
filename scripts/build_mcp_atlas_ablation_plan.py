@@ -3,6 +3,10 @@
 This does not run the MCP-Atlas harness. It prepares candidate ablation records
 from cached MCP-Atlas rows so the actual runs can be executed with Omar's
 handoff/runbook or the official MCP-Atlas scripts.
+
+Each output record says which required tool should be hidden, which tools remain
+visible in the ablated run, and what strict validation rule should be used before
+promoting the case to a clean capability-gap example.
 """
 
 from __future__ import annotations

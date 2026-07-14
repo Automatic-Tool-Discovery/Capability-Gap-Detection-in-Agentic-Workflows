@@ -1,4 +1,12 @@
-"""Run evaluation across baselines, splits, and optional external benchmarks."""
+"""Command-line evaluation runner for the capability-gap project.
+
+This is the experiment entry point. It loads traces from local live MCP runs or
+external benchmark adapters, chooses one or more classifiers, applies the chosen
+split strategy, computes metrics, and optionally writes per-trace prediction
+files for error analysis. It connects the core methods
+(``src.llm_classifier`` and ``src.capability_matcher``) to the datasets and
+metrics under ``src.evaluation``.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,12 @@
-"""All research tools exposed via a single MCP server."""
+"""Toy research-tool MCP server used to generate live capability-gap traces.
+
+This server exposes a single collection of tools to ``src.live_agent`` through
+MCP stdio. Some tools succeed, some deliberately fail for specific inputs, and
+some represent external capabilities such as weather, currency conversion,
+email, calendar, or ticket search. Live experiments run tasks twice: once with
+the full toolset and once with required tools withheld, which creates
+ground-truth F6 missing-capability examples for the rest of the project.
+"""
 
 from __future__ import annotations
 

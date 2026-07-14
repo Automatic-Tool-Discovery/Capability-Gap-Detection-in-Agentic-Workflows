@@ -3,6 +3,10 @@
 The official MCP-Atlas completion script expects CSV rows with the original
 dataset columns. This script preserves each source row and changes only
 ``ENABLED_TOOLS`` in the ablated copy.
+
+It is the bridge between the JSONL ablation plan produced by
+``build_mcp_atlas_ablation_plan.py`` and the paired CSV files consumed by the
+external MCP-Atlas harness.
 """
 
 from __future__ import annotations

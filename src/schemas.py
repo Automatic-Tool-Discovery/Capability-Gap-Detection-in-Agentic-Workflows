@@ -1,5 +1,16 @@
-from pydantic import BaseModel
+"""Shared data models for the capability-gap project.
+
+This file defines the typed objects that move through the whole pipeline:
+raw tool calls become ``AgentTrace`` records, classifiers return ``Prediction``
+objects, and capability-gap detections can include a ``CapabilityRequest`` that
+describes the missing tool. Most other modules import these models, so this file
+is the contract between live trace generation, benchmark adapters, evaluation,
+and the capability matcher.
+"""
+
 from typing import Any, Optional
+
+from pydantic import BaseModel
 
 
 class ToolCall(BaseModel):
