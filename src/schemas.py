@@ -46,6 +46,10 @@ class AgentTrace(BaseModel):
     source: Optional[str] = None
     domain: Optional[str] = None
     capabilities: list[str] = []
+    # Evaluation-only ground truth. Classifiers must not include these fields in
+    # their prompts; benchmark builders populate them when a tool is withheld.
+    gold_missing_capabilities: list[str] = []
+    gold_capability_requests: list["CapabilityRequest"] = []
 
 
 class CapabilityRequest(BaseModel):

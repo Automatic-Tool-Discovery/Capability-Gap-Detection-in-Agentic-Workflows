@@ -130,7 +130,32 @@ def _aggregate_results(results: list[EvaluationResult]) -> dict[str, float]:
         "f6_f1",
         "gap_detection_f1",
     ]
-    return {key: sum(getattr(result, key) for result in results) / len(results) for key in keys}
+    aggregate = {
+        key: sum(getattr(result, key) for result in results) / len(results)
+        for key in keys
+    }
+    request_results = [
+        result.capability_request_result
+        for result in results
+        if result.capability_request_result is not None
+    ]
+    if request_results:
+        request_keys = [
+            "capability_precision",
+            "capability_recall",
+            "capability_f1",
+            "exact_match_rate",
+            "request_coverage",
+            "schema_completeness",
+        ]
+        aggregate.update(
+            {
+                f"request_{key}": sum(getattr(result, key) for result in request_results)
+                / len(request_results)
+                for key in request_keys
+            }
+        )
+    return aggregate
 
 
 def main() -> None:

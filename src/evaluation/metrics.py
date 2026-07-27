@@ -19,6 +19,7 @@ from sklearn.metrics import (
 
 from src.schemas import AgentTrace, Prediction
 from src.taxonomy import FailureType
+from src.evaluation.request_metrics import CapabilityRequestResult, evaluate_capability_requests
 
 
 F6_LABEL = FailureType.MISSING_CAPABILITY_GAP.value
@@ -38,10 +39,11 @@ class EvaluationResult:
     f6_f1: float
     gap_detection_f1: float
     report: str
+    capability_request_result: CapabilityRequestResult | None = None
     predictions: list[Prediction] = field(default_factory=list)
 
     def to_dict(self) -> dict:
-        return {
+        result = {
             "method": self.method,
             "split": self.split,
             "n_train": self.n_train,
@@ -54,6 +56,9 @@ class EvaluationResult:
             "f6_f1": self.f6_f1,
             "gap_detection_f1": self.gap_detection_f1,
         }
+        if self.capability_request_result is not None:
+            result.update(self.capability_request_result.to_dict())
+        return result
 
 
 def evaluate_predictions(
@@ -106,6 +111,7 @@ def evaluate_predictions(
         f6_f1=float(f6_f1),
         gap_detection_f1=float(gap_f1),
         report=report,
+        capability_request_result=evaluate_capability_requests(traces, predictions),
         predictions=predictions,
     )
 
@@ -121,7 +127,18 @@ def format_result(result: EvaluationResult) -> str:
         f"F6 precision/recall/F1: {result.f6_precision:.3f} / "
         f"{result.f6_recall:.3f} / {result.f6_f1:.3f}",
         f"Binary gap detection F1 (F6 vs rest): {result.gap_detection_f1:.3f}",
-        "",
-        result.report,
     ]
+    if result.capability_request_result is not None:
+        request = result.capability_request_result
+        lines.extend(
+            [
+                f"Request capability P/R/F1: {request.capability_precision:.3f} / "
+                f"{request.capability_recall:.3f} / {request.capability_f1:.3f}",
+                f"Request exact match / coverage: {request.exact_match_rate:.3f} / "
+                f"{request.request_coverage:.3f}",
+                f"Request schema completeness: {request.schema_completeness:.3f} "
+                f"(n={request.n_eligible})",
+            ]
+        )
+    lines.extend(["", result.report])
     return "\n".join(lines)

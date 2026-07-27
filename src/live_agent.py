@@ -31,7 +31,7 @@ from mcp import ClientSession, StdioServerParameters, types
 from mcp.client.stdio import stdio_client
 
 from src.evaluation.capabilities import tools_to_capabilities
-from src.schemas import AgentTrace, ToolCall
+from src.schemas import AgentTrace, CapabilityRequest, ToolCall
 from src.taxonomy import FailureType
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -102,6 +102,7 @@ async def run_task(
     withhold: set[str],
     model: str,
     client: Any,
+    gold_missing_tools: set[str] | None = None,
 ) -> AgentTrace:
     openai_tools, offered = _mcp_tools_to_openai(mcp_tools, withhold)
     messages: list[dict[str, Any]] = [
@@ -177,15 +178,48 @@ async def run_task(
                 }
             )
 
-    is_gap = bool(withhold)
+    is_gap = bool(gold_missing_tools)
     gold_label = FailureType.MISSING_CAPABILITY_GAP.value if is_gap else None
     failure_explanation = (
-        f"Required tool(s) {sorted(withhold)} were withheld from the agent, "
+        f"Required tool(s) {sorted(gold_missing_tools or set())} were withheld from the agent, "
         "so the task cannot be completed with the available tools."
         if is_gap
         else None
     )
-    suffix = "gap" if is_gap else "control"
+    suffix = "gap" if is_gap else ("custom" if withhold else "control")
+    schemas_by_name = {tool.name: tool for tool in mcp_tools}
+    gold_requests = []
+    for tool_name in sorted(gold_missing_tools or set()):
+        tool = schemas_by_name.get(tool_name)
+        if tool is None:
+            continue
+        input_schema = tool.inputSchema or {}
+        output_schema = tool.outputSchema or {}
+        gold_requests.append(
+            CapabilityRequest(
+                name=tool.name,
+                capability=tools_to_capabilities([tool.name])[0],
+                description=tool.description or f"Provides the {tool.name} capability.",
+                inputs=[
+                    {
+                        "name": name,
+                        "type": details.get("type", "any"),
+                        "description": details.get("description", ""),
+                        "required": name in input_schema.get("required", []),
+                    }
+                    for name, details in input_schema.get("properties", {}).items()
+                ],
+                outputs=[
+                    {
+                        "name": name,
+                        "type": details.get("type", "any"),
+                        "description": details.get("description", ""),
+                    }
+                    for name, details in output_schema.get("properties", {}).items()
+                ],
+                rationale=f"This withheld tool is required to complete: {task['user_task']}",
+            )
+        )
 
     return AgentTrace(
         trace_id=f"live_{task['task_id']}_{suffix}",
@@ -201,7 +235,45 @@ async def run_task(
         source="mcp-live",
         domain="mcp_research_tools",
         capabilities=tools_to_capabilities(offered),
+        gold_missing_capabilities=tools_to_capabilities(
+            sorted(gold_missing_tools or set())
+        ),
+        gold_capability_requests=gold_requests,
     )
+
+
+async def run_single_question(
+    question: str,
+    *,
+    available_tools: set[str] | None = None,
+    model: str = DEFAULT_MODEL,
+) -> AgentTrace:
+    """Run one ad-hoc question. Gold labels stay unset because need is unknown."""
+    client = _make_client()
+    server_params = StdioServerParameters(
+        command=sys.executable,
+        args=[str(SERVER_SCRIPT)],
+        cwd=str(PROJECT_ROOT),
+    )
+    async with AsyncExitStack() as stack:
+        read, write = await stack.enter_async_context(stdio_client(server_params))
+        session = await stack.enter_async_context(ClientSession(read, write))
+        await session.initialize()
+        mcp_tools = (await session.list_tools()).tools
+        all_tools = {tool.name for tool in mcp_tools}
+        selected = all_tools if available_tools is None else available_tools
+        unknown = selected - all_tools
+        if unknown:
+            raise ValueError(f"Unknown available tool(s): {', '.join(sorted(unknown))}")
+        return await run_task(
+            session,
+            mcp_tools,
+            task={"task_id": "single_question", "user_task": question},
+            withhold=all_tools - selected,
+            model=model,
+            client=client,
+            gold_missing_tools=None,
+        )
 
 
 async def collect_live_traces(
@@ -252,6 +324,7 @@ async def collect_live_traces(
                         withhold=withhold,
                         model=model,
                         client=client,
+                        gold_missing_tools=withhold if withhold else None,
                     )
                     traces.append(trace)
                     output_file.write(json.dumps(trace.model_dump(), ensure_ascii=False) + "\n")

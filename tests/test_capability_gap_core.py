@@ -16,7 +16,9 @@ from src.capability_matcher import classify_trace
 from src.evaluation.benchmarks.mcp_atlas import row_to_gap_traces
 from src.evaluation.capabilities import tools_to_capabilities
 from src.evaluation.metrics import evaluate_predictions
-from src.schemas import AgentTrace, Prediction, ToolCall
+from src.evaluation.request_metrics import capabilities_match, evaluate_capability_requests
+from src.evaluation.splits import load_traces
+from src.schemas import AgentTrace, CapabilityRequest, Prediction, ToolCall
 from src.taxonomy import FailureType
 from scripts.export_mcp_atlas_ablation_inputs import export_inputs
 
@@ -59,6 +61,7 @@ class CapabilityGapCoreTests(unittest.TestCase):
         self.assertEqual(traces[0].gold_label, F6)
         self.assertNotIn("database_query", traces[0].available_tools)
         self.assertEqual(traces[0].capabilities, ["calculator"])
+        self.assertEqual(traces[0].gold_missing_capabilities, ["database_query"])
 
     def test_evaluate_predictions_reports_binary_gap_f1(self):
         traces = [
@@ -151,6 +154,67 @@ class CapabilityGapCoreTests(unittest.TestCase):
         self.assertTrue(prediction.new_tool_needed)
         self.assertEqual(prediction.missing_capabilities, ["weather_api"])
         self.assertEqual(prediction.capability_requests[0].name, "weather_lookup")
+
+    def test_capability_request_metrics_score_correctness_and_completeness(self):
+        trace = AgentTrace(
+            trace_id="gap",
+            user_task="Need weather.",
+            available_tools=[],
+            tool_calls=[],
+            gold_label=F6,
+            gold_missing_capabilities=["weather_api"],
+        )
+        prediction = Prediction(
+            trace_id="gap",
+            predicted_label=F6,
+            confidence=1.0,
+            evidence=["missing weather"],
+            new_tool_needed=True,
+            missing_capabilities=["weather_api"],
+            capability_requests=[
+                CapabilityRequest(
+                    name="weather_lookup",
+                    capability="weather_api",
+                    description="Fetch weather.",
+                    inputs=[{"name": "city", "type": "string"}],
+                    outputs=[{"name": "weather", "type": "string"}],
+                    rationale="Needed for current conditions.",
+                )
+            ],
+        )
+
+        result = evaluate_capability_requests([trace], [prediction])
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.capability_f1, 1.0)
+        self.assertEqual(result.exact_match_rate, 1.0)
+        self.assertEqual(result.request_coverage, 1.0)
+        self.assertEqual(result.schema_completeness, 1.0)
+
+    def test_capability_matching_accepts_rephrasing_but_rejects_other_email_action(self):
+        self.assertTrue(capabilities_match("weather_api", "get_current_weather"))
+        self.assertTrue(capabilities_match("currency_converter", "currency_conversion"))
+        self.assertTrue(capabilities_match("search_emails", "email_search"))
+        self.assertFalse(capabilities_match("send_email", "search_emails"))
+
+    def test_loader_backfills_ground_truth_for_legacy_live_trace(self):
+        trace = AgentTrace(
+            trace_id="legacy_gap",
+            user_task="Need weather.",
+            available_tools=[],
+            tool_calls=[],
+            gold_label=F6,
+            failure_explanation=(
+                "Required tool(s) ['weather_api'] were withheld from the agent, "
+                "so the task cannot be completed with the available tools."
+            ),
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "trace.jsonl"
+            path.write_text(trace.model_dump_json() + "\n", encoding="utf-8")
+            loaded = load_traces([path])
+
+        self.assertEqual(loaded[0].gold_missing_capabilities, ["weather_api"])
 
     def test_export_mcp_atlas_ablation_inputs_writes_baseline_and_ablated_csvs(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -20,7 +20,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from src.evaluation.capabilities import tools_to_capabilities
+from src.evaluation.capabilities import tool_to_capability, tools_to_capabilities
 from src.schemas import AgentTrace, ToolCall
 from src.taxonomy import FailureType
 
@@ -137,6 +137,7 @@ def row_to_gap_traces(row: dict[str, Any], *, max_per_task: int = 2) -> list[Age
                 source="mcp-atlas",
                 domain="mcp_atlas",
                 capabilities=tools_to_capabilities(available),
+                gold_missing_capabilities=[tool_to_capability(missing_tool)],
             )
         )
     return traces

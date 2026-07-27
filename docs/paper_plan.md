@@ -9,11 +9,15 @@ Compare candidate methods for spotting F6 (missing capability) failures:
 - Pure symbolic/rule-based matching — tried, removed (misses semantic gaps)
 - Pure LLM-as-judge (baseline, mirrors AgentRx)
 - Hybrid: LLM extracts required capabilities → deterministic set comparison against available tools
-**Status: hybrid approach implemented (`capability_matcher.py`). Need results showing it beats the pure-LLM baseline.**
+**Status: hybrid approach implemented (`capability_matcher.py`). On the six labeled
+live F6 traces, the fair hybrid scored gap-detection F1 = 1.000 versus 0.909 for
+the pure-LLM baseline (July 28 run; see `outputs/evaluation/summary_all.json`).**
 
 ## Step 3: Evaluate the detection approach
 Score all methods with the same metrics (accuracy, F1, binary gap-detection F1) under fair conditions (no answer-key hints).
-**Status: pipeline exists (`evaluate.py`). Need final numbers across all dataset splits.**
+**Status: all-split live result recorded.** Broader random/CV results still require
+a dataset containing enough labeled non-F6 examples; the current live controls
+are intentionally unlabeled and therefore excluded from scoring.
 
 ## Step 4: Produce a capability request
 On a detected gap, output a structured spec of the missing tool (name, inputs, outputs, rationale) — not just a label.
@@ -21,7 +25,10 @@ On a detected gap, output a structured spec of the missing tool (name, inputs, o
 
 ## Step 5: Evaluate capability request quality
 Check whether the generated capability spec is actually correct and usable (not just whether F6 was detected).
-**Status: missing. This is the key gap before submission.**
+**Status: implemented.** For traces with benchmark-known withheld capabilities,
+report capability precision/recall/F1, exact set match, request coverage, and
+schema completeness. Natural-language quality and executable-tool validation
+remain limitations requiring human review or a tool-synthesis experiment.
 
 ## Step 6: Build a demo system
 A small interactive tool with two ways in, feeding the same classify → evaluate pipeline:
@@ -42,5 +49,6 @@ User picks or pastes an existing trace (with a known gold label) → pipeline cl
 - Lets you replay a specific failing case to debug *why* it was misclassified
 - Needed for Step 5: comparing generated capability requests against known-good ones
 
-**Status: missing — both modes reuse pieces that already exist (`live_agent.py`, `evaluate.py`,
-`capability_matcher.py`); the missing part is the single-question/single-trace wrapper and display.**
+**Status: implemented in `src/demo.py`.** It accepts either one recorded trace
+(`--trace`, optionally `--trace-id`) or one live question (`--question`, optionally
+`--available-tools`) and displays the prediction and capability request.

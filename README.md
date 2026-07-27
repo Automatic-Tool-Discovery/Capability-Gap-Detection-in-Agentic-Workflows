@@ -202,6 +202,35 @@ uv run python -m src.evaluate --benchmark agentrx --agentrx-source hf --agentrx-
 With `--save-predictions`, detected gaps write `missing_capabilities` and
 `capability_requests` into `outputs/evaluation/predictions_*.jsonl`.
 
+For F6 traces with known withheld capabilities, evaluation also reports:
+
+- capability precision/recall/F1 and exact set match;
+- request coverage (whether every known missing capability received a spec);
+- schema completeness across name, capability, description, rationale, inputs,
+  and outputs.
+
+These deterministic metrics measure correctness and structural usability. They
+do not claim to measure prose quality or whether generated implementation code
+would execute. Capability names are compared with normalized token overlap
+(generic words such as `api`, `tool`, `get`, and `current` are ignored; at least
+two-thirds of the remaining tokens must overlap), so harmless slug rephrasings
+such as `email_search` versus `search_emails` count as equivalent.
+
+Replay one recorded trace next to its gold label and capability:
+
+```bash
+uv run python -m src.demo --trace data/live_traces.jsonl \
+  --trace-id live_weather_berlin_gap --method capmatch-fair
+```
+
+Or run one live question with only selected tools and feed the resulting trace
+through the same classifier:
+
+```bash
+uv run python -m src.demo --question "What is the weather in Berlin?" \
+  --available-tools calculator,web_search --method capmatch-fair
+```
+
 ---
 
 ## Project Structure

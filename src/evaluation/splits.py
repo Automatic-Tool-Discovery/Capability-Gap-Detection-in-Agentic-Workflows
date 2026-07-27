@@ -9,14 +9,35 @@ live MCP traces and external benchmark adapters.
 
 from __future__ import annotations
 
+import ast
+import re
 from pathlib import Path
 from typing import Callable, Iterator
 
 from sklearn.model_selection import LeaveOneOut, StratifiedKFold, train_test_split
 
 from src.schemas import AgentTrace
+from src.evaluation.capabilities import tools_to_capabilities
 
 LIVE_PATH = Path("data/live_traces.jsonl")
+
+
+def _add_legacy_gap_ground_truth(trace: AgentTrace) -> AgentTrace:
+    """Backfill old live traces written before gold capability fields existed."""
+    if trace.gold_missing_capabilities or not trace.failure_explanation:
+        return trace
+    match = re.search(r"Required tool\(s\) (\[[^\]]*\]) were withheld", trace.failure_explanation)
+    if not match:
+        return trace
+    try:
+        tools = ast.literal_eval(match.group(1))
+    except (SyntaxError, ValueError):
+        return trace
+    if isinstance(tools, list):
+        trace.gold_missing_capabilities = tools_to_capabilities(
+            [str(tool) for tool in tools]
+        )
+    return trace
 
 
 def load_traces(paths: list[Path]) -> list[AgentTrace]:
@@ -27,7 +48,8 @@ def load_traces(paths: list[Path]) -> list[AgentTrace]:
         with path.open("r", encoding="utf-8") as handle:
             for line in handle:
                 if line.strip():
-                    traces.append(AgentTrace.model_validate_json(line))
+                    trace = AgentTrace.model_validate_json(line)
+                    traces.append(_add_legacy_gap_ground_truth(trace))
     return traces
 
 
