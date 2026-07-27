@@ -76,7 +76,7 @@ def _default_client_factory() -> Callable[..., Any]:
         from openai import OpenAI
     except ImportError as exc:
         raise ImportError(
-            "Install the openai package to use the LLM baseline: pip install openai"
+            "Install the openai package to use the LLM baseline: uv add openai"
         ) from exc
 
     api_key = os.environ.get("SCADS_API_KEY") or os.environ.get("OPENAI_API_KEY")

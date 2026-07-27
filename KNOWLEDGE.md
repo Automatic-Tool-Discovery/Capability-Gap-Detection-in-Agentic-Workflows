@@ -173,7 +173,8 @@ labels → write metrics.
 
 ### 5.1 Prerequisites
 
-- Python 3.10+ (3.11 or 3.12 recommended)
+- [uv](https://docs.astral.sh/uv/) (manages the Python version and dependencies — no
+  manual venv needed)
 - `git clone` of this repo
 - A **TUD:AI API key** for LLM calls: https://llm.scads.ai/docs/
 - (Optional) Hugging Face account for the full AgentRx dataset
@@ -182,10 +183,13 @@ labels → write metrics.
 
 ```bash
 cd Capability-Gap-Detection-in-Agentic-Workflows
-python3 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+uv sync
 ```
+
+`uv sync` reads `pyproject.toml`/`uv.lock`, installs Python 3.11 if needed, creates
+`.venv/`, and installs all dependencies. Run commands with `uv run ...` (e.g.
+`uv run python -m src.evaluate ...`) or activate the venv as usual with
+`source .venv/bin/activate`.
 
 ### 5.3 Environment variables
 
@@ -209,7 +213,7 @@ export SCADS_MODEL="alias-huge-no-thinking"
 ### 5.4 Quick sanity check (no API key needed for samples load)
 
 ```bash
-python -c "from src.evaluation.benchmarks.agentrx import load_sample_traces; print(len(load_sample_traces()))"
+uv run python -c "from src.evaluation.benchmarks.agentrx import load_sample_traces; print(len(load_sample_traces()))"
 # Should print: 7
 ```
 
@@ -461,7 +465,8 @@ Traces with `gold_label: null` are **skipped** during scoring (control runs).
 |------|---------|
 | [README.md](README.md) | Research overview (shorter, for advisors/reviewers) |
 | [KNOWLEDGE.md](KNOWLEDGE.md) | This file — full beginner guide |
-| [requirements.txt](requirements.txt) | Python dependencies |
+| [pyproject.toml](pyproject.toml) | Project metadata + Python dependencies (uv) |
+| [uv.lock](uv.lock) | Locked dependency versions (commit this file) |
 | [.env.example](.env.example) | Template for API keys |
 | [.gitignore](.gitignore) | Files git should ignore |
 
@@ -528,7 +533,7 @@ Reference PDFs (AgentRx paper, etc.) — read-only background material.
 ```bash
 export SCADS_API_KEY="..."
 export SCADS_MODEL="alias-huge-no-thinking"
-python -m src.live_agent --mode both
+uv run python -m src.live_agent --mode both
 # Writes data/live_traces.jsonl
 ```
 
@@ -540,7 +545,7 @@ What you will see: 10 traces (5 control + 5 gap). Gap traces have `gold_label: F
 
 ```bash
 export SCADS_API_KEY="..."
-python -m src.evaluate --method llm-fair --split all --save-predictions
+uv run python -m src.evaluate --method llm-fair --split all --save-predictions
 ```
 
 Uses `data/live_traces.jsonl` by default. Only labeled traces (the 5 gap runs) are scored.
@@ -550,7 +555,7 @@ Uses `data/live_traces.jsonl` by default. Only labeled traces (the 5 gap runs) a
 ### Workflow C: Compare baseline vs our method on live traces
 
 ```bash
-python -m src.evaluate --method llm-fair capmatch-fair --split all --save-predictions
+uv run python -m src.evaluate --method llm-fair capmatch-fair --split all --save-predictions
 ```
 
 This is the **most important experiment you have not run yet**.
@@ -561,12 +566,12 @@ This is the **most important experiment you have not run yet**.
 
 ```bash
 # Offline demo (7 samples, no HF auth):
-python -m src.evaluate --benchmark agentrx --agentrx-source samples --agentrx-only \
+uv run python -m src.evaluate --benchmark agentrx --agentrx-source samples --agentrx-only \
   --method llm-fair --split all
 
 # Full tau_retail (29 failures, needs HF login):
 huggingface-cli login
-python -m src.evaluate --benchmark agentrx --agentrx-source hf --agentrx-only \
+uv run python -m src.evaluate --benchmark agentrx --agentrx-source hf --agentrx-only \
   --method llm-fair capmatch-fair --split all --save-predictions
 ```
 
@@ -633,24 +638,24 @@ Do these in order. Each step produces something concrete.
 source .venv/bin/activate
 
 # Generate live traces
-python -m src.live_agent --mode both
+uv run python -m src.live_agent --mode both
 
 # Evaluate baseline on live data
-python -m src.evaluate --method llm-fair --split all --save-predictions
+uv run python -m src.evaluate --method llm-fair --split all --save-predictions
 
 # Evaluate both methods on live data
-python -m src.evaluate --method llm-fair capmatch-fair --split all --save-predictions
+uv run python -m src.evaluate --method llm-fair capmatch-fair --split all --save-predictions
 
 # AgentRx offline samples (no API for loading; API needed for classification)
-python -m src.evaluate --benchmark agentrx --agentrx-source samples --agentrx-only \
+uv run python -m src.evaluate --benchmark agentrx --agentrx-source samples --agentrx-only \
   --method llm-fair --split all
 
 # AgentRx full tau_retail
-python -m src.evaluate --benchmark agentrx --agentrx-source hf --agentrx-only \
+uv run python -m src.evaluate --benchmark agentrx --agentrx-source hf --agentrx-only \
   --method llm-fair capmatch-fair --split all --save-predictions
 
 # Oracle upper bound (uses gold failure_explanation — not deployable)
-python -m src.evaluate --method llm-oracle capmatch-oracle --split all
+uv run python -m src.evaluate --method llm-oracle capmatch-oracle --split all
 ```
 
 ---
@@ -677,8 +682,8 @@ the main metric for F6.
 
 ### "Live agent fails with MCP errors"
 
-Make sure you activated the venv and `mcp` is installed (`pip install -r requirements.txt`).
-The server script is `mcp_servers/research_tools/server.py`.
+Make sure dependencies are installed (`uv sync`) and commands are run with `uv run ...`
+(or the venv is activated). The server script is `mcp_servers/research_tools/server.py`.
 
 ### "What's the difference between README and KNOWLEDGE?"
 

@@ -1,0 +1,18 @@
+[project]
+name = "capability-gap-detection"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "datasets>=2.0.0",
+    "mcp>=1.27,<2",
+    "openai>=1.0.0",
+    "pyarrow>=14.0.0",
+    "pydantic>=2.13.4",
+    "scikit-learn>=1.9.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

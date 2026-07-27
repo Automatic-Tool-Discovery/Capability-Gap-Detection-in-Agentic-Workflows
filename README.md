@@ -131,7 +131,7 @@ happens. For each task in `data/live_tasks.json` we run it twice:
 ```bash
 export SCADS_API_KEY="your-tud-ai-key"          # https://llm.scads.ai/docs/
 export SCADS_MODEL="alias-huge-no-thinking"     # must support tool calling
-python -m src.live_agent --mode both
+uv run python -m src.live_agent --mode both
 # → data/live_traces.jsonl
 ```
 
@@ -195,7 +195,7 @@ gap decision here is **structured and grounded**:
 
 ```bash
 # Our method vs the baseline on the real τ-retail failures
-python -m src.evaluate --benchmark agentrx --agentrx-source hf --agentrx-only \
+uv run python -m src.evaluate --benchmark agentrx --agentrx-source hf --agentrx-only \
   --method llm-fair capmatch-fair --split all --save-predictions
 ```
 
@@ -236,21 +236,20 @@ outputs/evaluation/       evaluation summaries + per-trace predictions
 ## How to Run
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+uv sync
 export SCADS_API_KEY="your-tud-ai-key"
 ```
 
 ```bash
 # Baseline on the real AgentRx τ-retail data (29 failures)
-python -m src.evaluate --benchmark agentrx --agentrx-source hf --agentrx-only \
+uv run python -m src.evaluate --benchmark agentrx --agentrx-source hf --agentrx-only \
   --method llm-fair --split all --save-predictions
 
 # Baseline on our live MCP traces (ground-truth F6)
-python -m src.evaluate --method llm-fair --split all
+uv run python -m src.evaluate --method llm-fair --split all
 
 # Quick offline sanity check (public AgentRx samples, no HF auth)
-python -m src.evaluate --benchmark agentrx --agentrx-source samples --agentrx-only \
+uv run python -m src.evaluate --benchmark agentrx --agentrx-source samples --agentrx-only \
   --method llm-fair --split all
 ```
 

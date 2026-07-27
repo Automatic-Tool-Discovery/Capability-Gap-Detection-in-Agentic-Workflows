@@ -330,7 +330,7 @@ def load_hf_traces(
     except ImportError as exc:
         raise ImportError(
             "Install huggingface_hub to load the gated AgentRx benchmark: "
-            "pip install huggingface_hub"
+            "uv add huggingface_hub"
         ) from exc
 
     if domain not in HF_DOMAIN_FILES:

@@ -159,7 +159,7 @@ def load_atlas_rows(
         from datasets import load_dataset
     except ImportError as exc:
         raise ImportError(
-            "Install datasets to download MCP-Atlas: pip install datasets pyarrow"
+            "Install datasets to download MCP-Atlas: uv add datasets pyarrow"
         ) from exc
 
     dataset = load_dataset("ScaleAI/MCP-Atlas", split="train")
