@@ -1,9 +1,9 @@
 [
   {
-    "method": "capmatch-fair",
+    "method": "llm-fair",
     "split": "all",
     "n_train": 60,
-    "n_test": 30,
+    "n_test": 60,
     "accuracy": 1.0,
     "macro_f1": 1.0,
     "weighted_f1": 1.0,
@@ -12,11 +12,31 @@
     "f6_f1": 1.0,
     "gap_detection_f1": 1.0,
     "request_n_eligible": 30,
-    "request_capability_precision": 0.6333333333333333,
-    "request_capability_recall": 0.6333333333333333,
-    "request_capability_f1": 0.6333333333333333,
-    "request_exact_match_rate": 0.6333333333333333,
-    "request_coverage": 0.6333333333333333,
+    "request_capability_precision": 0.0,
+    "request_capability_recall": 0.0,
+    "request_capability_f1": 0.0,
+    "request_exact_match_rate": 0.0,
+    "request_coverage": 0.0,
+    "request_schema_completeness": 0.0
+  },
+  {
+    "method": "capmatch-fair",
+    "split": "all",
+    "n_train": 60,
+    "n_test": 60,
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "f6_precision": 1.0,
+    "f6_recall": 1.0,
+    "f6_f1": 1.0,
+    "gap_detection_f1": 1.0,
+    "request_n_eligible": 30,
+    "request_capability_precision": 0.6,
+    "request_capability_recall": 0.6,
+    "request_capability_f1": 0.6,
+    "request_exact_match_rate": 0.6,
+    "request_coverage": 0.6,
     "request_schema_completeness": 1.0
   }
 ]
