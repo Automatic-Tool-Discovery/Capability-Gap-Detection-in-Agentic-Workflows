@@ -31,6 +31,60 @@ Given a **user task**, the **available tools**, and the **agent execution trace*
 The headline contribution is step 3: turning a diagnosis into an actionable
 *capability request*.
 
+## Current Status
+
+The implementation is complete enough for interim research progress. The remaining
+work is mainly experimental cleanup, external validation, and write-up.
+
+Implemented:
+
+- F0-F8 failure taxonomy.
+- LLM-as-judge baseline classifier (`llm-fair`).
+- Capability matcher (`capmatch-fair`) for detecting F6 missing-capability gaps.
+- Structured `CapabilityRequest` output for missing tools/capabilities.
+- Live MCP trace generation with paired control/gap runs.
+- Realtime MCP tools for weather, exchange rates, earthquakes, ISS position,
+  public holidays, and Open Library lookup.
+- Qwen/Ollama-compatible model configuration.
+- Qwen realtime task files, generated traces, smoke traces, and a cleaned dataset
+  builder.
+- Slurm job scripts and an HPC runbook for Alpha/Capella-style runs.
+- MCP-Atlas ablation planning/export scripts for external validation.
+
+Current Qwen dataset state:
+
+| File | Status |
+|------|--------|
+| `data/live_realtime_traces_qwen3.jsonl` | 60 raw Qwen realtime traces |
+| `data/live_realtime_smoke_traces_qwen3.jsonl` | 10 smoke traces |
+| `data/live_realtime_smoke_traces_qwen3_v2.jsonl` | 10 smoke traces |
+| `data/live_realtime_replacement_traces_qwen3.jsonl` | 1 replacement control trace |
+| `data/live_realtime_traces_qwen3_clean.jsonl` | 59 cleaned traces: 30 controls, 29 gaps |
+
+The cleaned Qwen dataset is one trace short of the ideal 60-trace set because the
+Canada public-holidays replacement currently contains only the control run, not the
+matching gap run. The existing cleaned traces are structurally clean:
+
+```text
+bad_controls=[]
+gap_with_calls=[]
+```
+
+Current honest claim:
+
+> We implemented a prototype capability-gap detector that improves over an
+> LLM-as-judge baseline on controlled live MCP capability-gap traces and emits
+> structured missing-capability requests.
+
+Next steps:
+
+1. Generate the missing `live_rt_holidays_ca_2026_gap` replacement trace, or rerun
+   the full Qwen realtime job on HPC if fresh provenance is preferred.
+2. Rebuild `data/live_realtime_traces_qwen3_clean.jsonl`.
+3. Evaluate `llm-fair` and `capmatch-fair` on the cleaned Qwen dataset.
+4. Add the final result table to the report.
+5. Run MCP-Atlas paired baseline/ablated experiments as external validation.
+
 ## Failure Taxonomy (F0–F8)
 
 | Label | Description |
@@ -152,7 +206,24 @@ Findings from live runs:
 
 ---
 
-## Baseline Method (single, LLM-based)
+## Method Tracks
+
+The project has three method tracks conceptually:
+
+| Track | Status | Role |
+|-------|--------|------|
+| Rule-based heuristic | Deprecated | Early sanity-check baseline; too weak for semantic failures |
+| `llm-fair` | Active baseline | Fair LLM-as-judge comparator |
+| `capmatch-fair` | Main method | Proposed capability-gap detector and request generator |
+
+### Rule-Based Heuristic
+
+The earliest version used surface-level trace cues such as tool errors and missing
+calls. It was cheap and deterministic, but it failed on semantic trajectory failures:
+on real AgentRx-style traces, it often labeled failed runs as success when no tool
+visibly crashed. It is therefore not treated as a serious final baseline.
+
+### LLM Judge Baseline
 
 We keep **one** internal baseline: an LLM classifier
 (`src/llm_classifier.py`) via the [TUD:AI API](https://llm.scads.ai/docs/usage/api/).
@@ -163,13 +234,12 @@ This mirrors AgentRx's own "LLM-as-judge" baseline, so the comparison is apples-
 | `llm-fair` | No | Honest, deployable baseline |
 | `llm-oracle` | Yes | Upper bound (sees the human rationale) |
 
-(The earlier rule-based heuristic baseline was removed: it was blind to semantic
-failures — it labeled ~20/29 real τ-bench failures as "success" because no tool threw
-an error string — so it was not a meaningful comparator.)
+(The earlier rule-based heuristic baseline was removed from the main comparison for
+the reason above.)
 
 ---
 
-## Our Method: the Capability Matcher
+## Our Method: Capability Matcher
 
 `src/capability_matcher.py` is the core contribution and where we beat AgentRx on the
 capability-gap slice. Unlike AgentRx's black-box judge that picks 1 of 9 labels, the
