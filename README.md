@@ -33,8 +33,9 @@ The headline contribution is step 3: turning a diagnosis into an actionable
 
 ## Current Status
 
-The implementation is complete enough for interim research progress. The remaining
-work is mainly experimental cleanup, external validation, and write-up.
+The implementation is complete enough for interim research progress. The Qwen
+realtime experiment has completed; the remaining work is mainly external
+validation and write-up.
 
 Implemented:
 
@@ -58,32 +59,40 @@ Current Qwen dataset state:
 | `data/live_realtime_traces_qwen3.jsonl` | 60 raw Qwen realtime traces |
 | `data/live_realtime_smoke_traces_qwen3.jsonl` | 10 smoke traces |
 | `data/live_realtime_smoke_traces_qwen3_v2.jsonl` | 10 smoke traces |
-| `data/live_realtime_replacement_traces_qwen3.jsonl` | 1 replacement control trace |
-| `data/live_realtime_traces_qwen3_clean.jsonl` | 59 cleaned traces: 30 controls, 29 gaps |
+| `data/live_realtime_replacement_traces_qwen3.jsonl` | Canada public-holidays replacement pair |
+| `data/live_realtime_traces_qwen3_clean.jsonl` | 60 cleaned traces: 30 controls, 30 gaps |
 
-The cleaned Qwen dataset is one trace short of the ideal 60-trace set because the
-Canada public-holidays replacement currently contains only the control run, not the
-matching gap run. The existing cleaned traces are structurally clean:
+The cleaned Qwen dataset is structurally clean:
 
 ```text
+traces=60 controls=30 gaps=30
 bad_controls=[]
 gap_with_calls=[]
 ```
 
+Qwen realtime evaluation on the 30 held-out gap traces:
+
+| Method | Accuracy | F6 precision | F6 recall | F6 F1 | Binary gap F1 | Request F1 | Request schema completeness |
+|--------|---------:|-------------:|----------:|------:|--------------:|-----------:|----------------------------:|
+| `llm-fair` | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.000 | 0.000 |
+| `capmatch-fair` | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.633 | 1.000 |
+
+The LLM baseline classifies these Qwen gap traces correctly but does not emit
+capability requests. The capability matcher matches classification performance
+and also produces complete request schemas, with 0.633 request capability F1.
+
 Current honest claim:
 
-> We implemented a prototype capability-gap detector that improves over an
-> LLM-as-judge baseline on controlled live MCP capability-gap traces and emits
-> structured missing-capability requests.
+> We implemented a prototype capability-gap detector that matches an LLM-as-judge
+> baseline on Qwen-generated controlled F6 classification and adds structured
+> missing-capability request generation, which the baseline does not provide.
 
 Next steps:
 
-1. Generate the missing `live_rt_holidays_ca_2026_gap` replacement trace, or rerun
-   the full Qwen realtime job on HPC if fresh provenance is preferred.
-2. Rebuild `data/live_realtime_traces_qwen3_clean.jsonl`.
-3. Evaluate `llm-fair` and `capmatch-fair` on the cleaned Qwen dataset.
-4. Add the final result table to the report.
-5. Run MCP-Atlas paired baseline/ablated experiments as external validation.
+1. Copy the completed Capella trace artifacts back into the repository if needed.
+2. Add the Qwen result table to the report.
+3. Inspect request mismatches to understand the 0.633 request capability F1.
+4. Run MCP-Atlas paired baseline/ablated experiments as external validation.
 
 ## Failure Taxonomy (F0–F8)
 
