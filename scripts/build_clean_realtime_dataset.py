@@ -27,6 +27,8 @@ def main() -> None:
     rows = [row for row in read_jsonl(RAW_PATH) if row["trace_id"] not in DROP_PREFIXES]
     if REPLACEMENT_PATH.exists():
         rows.extend(read_jsonl(REPLACEMENT_PATH))
+    rows_by_id = {row["trace_id"]: row for row in rows}
+    rows = list(rows_by_id.values())
     CLEAN_PATH.parent.mkdir(parents=True, exist_ok=True)
     with CLEAN_PATH.open("w", encoding="utf-8") as handle:
         for row in rows:
