@@ -2,7 +2,7 @@
 #SBATCH --job-name=qwen-ollama-apptainer
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --time=02:00:00
 #SBATCH --output=outputs/hpc/qwen-ollama-apptainer-%j.out
@@ -58,6 +58,7 @@ else
   source .venv-hpc/bin/activate
 fi
 
+unset PIP_REQUIRE_VIRTUALENV
 python --version
 python -m pip install --upgrade pip
 python -m pip install -e .
