@@ -108,6 +108,15 @@ def _make_client():
     return OpenAI(api_key=config.api_key, base_url=config.base_url)
 
 
+def _server_params() -> StdioServerParameters:
+    return StdioServerParameters(
+        command=sys.executable,
+        args=[str(SERVER_SCRIPT)],
+        cwd=str(PROJECT_ROOT),
+        env=dict(os.environ),
+    )
+
+
 async def run_task(
     session: ClientSession,
     mcp_tools: list[types.Tool],
@@ -264,11 +273,7 @@ async def run_single_question(
 ) -> AgentTrace:
     """Run one ad-hoc question. Gold labels stay unset because need is unknown."""
     client = _make_client()
-    server_params = StdioServerParameters(
-        command=sys.executable,
-        args=[str(SERVER_SCRIPT)],
-        cwd=str(PROJECT_ROOT),
-    )
+    server_params = _server_params()
     async with AsyncExitStack() as stack:
         read, write = await stack.enter_async_context(stdio_client(server_params))
         session = await stack.enter_async_context(ClientSession(read, write))
@@ -302,11 +307,7 @@ async def collect_live_traces(
     client = _make_client()
     traces: list[AgentTrace] = []
 
-    server_params = StdioServerParameters(
-        command=sys.executable,
-        args=[str(SERVER_SCRIPT)],
-        cwd=str(PROJECT_ROOT),
-    )
+    server_params = _server_params()
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     async with AsyncExitStack() as stack:
