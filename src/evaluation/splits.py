@@ -18,6 +18,7 @@ from sklearn.model_selection import LeaveOneOut, StratifiedKFold, train_test_spl
 
 from src.schemas import AgentTrace
 from src.evaluation.capabilities import tools_to_capabilities
+from src.taxonomy import FailureType
 
 LIVE_PATH = Path("data/live_traces.jsonl")
 
@@ -51,6 +52,20 @@ def load_traces(paths: list[Path]) -> list[AgentTrace]:
                     trace = AgentTrace.model_validate_json(line)
                     traces.append(_add_legacy_gap_ground_truth(trace))
     return traces
+
+
+def label_clean_controls_as_success(traces: list[AgentTrace]) -> list[AgentTrace]:
+    """Treat unlabeled clean control traces as F0 for paired live evaluations."""
+    labeled: list[AgentTrace] = []
+    for trace in traces:
+        if trace.gold_label is None and trace.source == "mcp-live":
+            has_tool_error = any(call.error for call in trace.tool_calls)
+            if trace.tool_calls and not has_tool_error:
+                trace = trace.model_copy(
+                    update={"gold_label": FailureType.SUCCESS_NO_FAILURE.value}
+                )
+        labeled.append(trace)
+    return labeled
 
 
 def labeled_traces(traces: list[AgentTrace]) -> list[AgentTrace]:

@@ -24,6 +24,7 @@ from src.evaluation.splits import (
     get_splitter,
     iter_leave_one_out,
     iter_stratified_kfold,
+    label_clean_controls_as_success,
     load_traces,
     split_random,
 )
@@ -216,6 +217,11 @@ def main() -> None:
         action="store_true",
         help="Write per-trace gold-vs-predicted comparisons for error inspection.",
     )
+    parser.add_argument(
+        "--label-clean-controls",
+        action="store_true",
+        help="Treat clean unlabeled live MCP control traces as F0_success.",
+    )
     args = parser.parse_args()
 
     trace_paths = args.traces if args.traces else DEFAULT_TRACE_PATHS
@@ -238,6 +244,8 @@ def main() -> None:
 
     if not traces:
         raise SystemExit("No traces found for evaluation.")
+    if args.label_clean_controls:
+        traces = label_clean_controls_as_success(traces)
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     summaries: list[dict] = []

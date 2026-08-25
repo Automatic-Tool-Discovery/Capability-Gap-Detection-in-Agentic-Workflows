@@ -70,7 +70,7 @@ bad_controls=[]
 gap_with_calls=[]
 ```
 
-Qwen realtime evaluation on the 30 held-out gap traces:
+Qwen realtime evaluation on the 30 held-out gap traces only:
 
 | Method | Accuracy | F6 precision | F6 recall | F6 F1 | Binary gap F1 | Request F1 | Request schema completeness |
 |--------|---------:|-------------:|----------:|------:|--------------:|-----------:|----------------------------:|
@@ -80,6 +80,8 @@ Qwen realtime evaluation on the 30 held-out gap traces:
 The LLM baseline classifies these Qwen gap traces correctly but does not emit
 capability requests. The capability matcher matches classification performance
 and also produces complete request schemas, with 0.633 request capability F1.
+Because unlabeled control traces were not counted in this run, the next audit is
+the full paired evaluation with clean controls labeled as `F0_success_no_failure`.
 
 Current honest claim:
 
@@ -90,9 +92,10 @@ Current honest claim:
 Next steps:
 
 1. Copy the completed Capella trace artifacts back into the repository if needed.
-2. Add the Qwen result table to the report.
-3. Inspect request mismatches to understand the 0.633 request capability F1.
-4. Run MCP-Atlas paired baseline/ablated experiments as external validation.
+2. Run the full paired Qwen evaluation with `--label-clean-controls`.
+3. Add the audited Qwen result table to the report.
+4. Inspect request mismatches to understand the 0.633 request capability F1.
+5. Run MCP-Atlas paired baseline/ablated experiments as external validation.
 
 ## Failure Taxonomy (F0–F8)
 
@@ -355,6 +358,10 @@ uv run python -m src.evaluate --benchmark agentrx --agentrx-source hf --agentrx-
 
 # Baseline on our live MCP traces (ground-truth F6)
 uv run python -m src.evaluate --method llm-fair --split all
+
+# Full paired live MCP evaluation: count clean unlabeled controls as F0_success_no_failure
+uv run python -m src.evaluate --traces data/live_realtime_traces_qwen3_clean.jsonl \
+  --method llm-fair capmatch-fair --split all --label-clean-controls --save-predictions
 
 # Quick offline sanity check (public AgentRx samples, no HF auth)
 uv run python -m src.evaluate --benchmark agentrx --agentrx-source samples --agentrx-only \
