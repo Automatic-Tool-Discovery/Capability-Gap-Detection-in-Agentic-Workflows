@@ -1,0 +1,27 @@
+[
+  {
+    "task_id": "rt_weather_berlin",
+    "user_task": "Get the current weather in Berlin from a live weather source.",
+    "required_tool": "realtime_weather"
+  },
+  {
+    "task_id": "rt_fx_usd_eur",
+    "user_task": "Get the latest USD to EUR exchange rate from a live currency source.",
+    "required_tool": "realtime_exchange_rate"
+  },
+  {
+    "task_id": "rt_quakes_45",
+    "user_task": "Check the current USGS daily feed for significant earthquakes of magnitude 4.5 or higher.",
+    "required_tool": "realtime_earthquakes"
+  },
+  {
+    "task_id": "rt_iss_position_now",
+    "user_task": "Find the current latitude and longitude of the International Space Station.",
+    "required_tool": "realtime_iss_position"
+  },
+  {
+    "task_id": "rt_books_dune",
+    "user_task": "Search live Open Library records for books titled Dune and report the top matches.",
+    "required_tool": "open_library_search"
+  }
+]

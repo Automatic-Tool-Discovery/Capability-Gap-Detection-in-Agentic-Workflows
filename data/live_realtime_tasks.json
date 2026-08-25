@@ -1,0 +1,152 @@
+[
+  {
+    "task_id": "rt_weather_berlin",
+    "user_task": "Get the current weather in Berlin from a live weather source.",
+    "required_tool": "realtime_weather"
+  },
+  {
+    "task_id": "rt_weather_dresden",
+    "user_task": "Get the current weather in Dresden from a live weather source.",
+    "required_tool": "realtime_weather"
+  },
+  {
+    "task_id": "rt_weather_london",
+    "user_task": "Get the current weather in London from a live weather source.",
+    "required_tool": "realtime_weather"
+  },
+  {
+    "task_id": "rt_weather_tokyo",
+    "user_task": "Get the current weather in Tokyo from a live weather source.",
+    "required_tool": "realtime_weather"
+  },
+  {
+    "task_id": "rt_weather_new_york",
+    "user_task": "Get the current weather in New York from a live weather source.",
+    "required_tool": "realtime_weather"
+  },
+  {
+    "task_id": "rt_fx_usd_eur",
+    "user_task": "Get the latest USD to EUR exchange rate from a live currency source.",
+    "required_tool": "realtime_exchange_rate"
+  },
+  {
+    "task_id": "rt_fx_eur_inr",
+    "user_task": "Get the latest EUR to INR exchange rate from a live currency source.",
+    "required_tool": "realtime_exchange_rate"
+  },
+  {
+    "task_id": "rt_fx_gbp_usd",
+    "user_task": "Get the latest GBP to USD exchange rate from a live currency source.",
+    "required_tool": "realtime_exchange_rate"
+  },
+  {
+    "task_id": "rt_fx_usd_jpy",
+    "user_task": "Get the latest USD to JPY exchange rate from a live currency source.",
+    "required_tool": "realtime_exchange_rate"
+  },
+  {
+    "task_id": "rt_fx_chf_eur",
+    "user_task": "Get the latest CHF to EUR exchange rate from a live currency source.",
+    "required_tool": "realtime_exchange_rate"
+  },
+  {
+    "task_id": "rt_quakes_45",
+    "user_task": "Check the current USGS daily feed for significant earthquakes of magnitude 4.5 or higher.",
+    "required_tool": "realtime_earthquakes"
+  },
+  {
+    "task_id": "rt_quakes_50",
+    "user_task": "Check the current USGS daily feed for significant earthquakes of magnitude 5.0 or higher.",
+    "required_tool": "realtime_earthquakes"
+  },
+  {
+    "task_id": "rt_quakes_60",
+    "user_task": "Check the current USGS daily feed for significant earthquakes of magnitude 6.0 or higher.",
+    "required_tool": "realtime_earthquakes"
+  },
+  {
+    "task_id": "rt_iss_position_now",
+    "user_task": "Find the current latitude and longitude of the International Space Station.",
+    "required_tool": "realtime_iss_position"
+  },
+  {
+    "task_id": "rt_iss_timestamp",
+    "user_task": "Find the current International Space Station position and include the timestamp returned by the live source.",
+    "required_tool": "realtime_iss_position"
+  },
+  {
+    "task_id": "rt_holidays_de_2026",
+    "user_task": "List the first few public holidays in Germany for 2026 from a live holidays API.",
+    "required_tool": "public_holidays"
+  },
+  {
+    "task_id": "rt_holidays_us_2026",
+    "user_task": "List the first few public holidays in the United States for 2026 from a live holidays API.",
+    "required_tool": "public_holidays"
+  },
+  {
+    "task_id": "rt_holidays_ca_2026",
+    "user_task": "List the first few public holidays in Canada for 2026 from a live holidays API.",
+    "required_tool": "public_holidays"
+  },
+  {
+    "task_id": "rt_holidays_gb_2026",
+    "user_task": "List the first few public holidays in Great Britain for 2026 from a live holidays API.",
+    "required_tool": "public_holidays"
+  },
+  {
+    "task_id": "rt_holidays_jp_2026",
+    "user_task": "List the first few public holidays in Japan for 2026 from a live holidays API.",
+    "required_tool": "public_holidays"
+  },
+  {
+    "task_id": "rt_books_dune",
+    "user_task": "Search live Open Library records for books titled Dune and report the top matches.",
+    "required_tool": "open_library_search"
+  },
+  {
+    "task_id": "rt_books_foundation",
+    "user_task": "Search live Open Library records for books titled Foundation and report the top matches.",
+    "required_tool": "open_library_search"
+  },
+  {
+    "task_id": "rt_books_hobbit",
+    "user_task": "Search live Open Library records for books titled The Hobbit and report the top matches.",
+    "required_tool": "open_library_search"
+  },
+  {
+    "task_id": "rt_books_frankenstein",
+    "user_task": "Search live Open Library records for books titled Frankenstein and report the top matches.",
+    "required_tool": "open_library_search"
+  },
+  {
+    "task_id": "rt_books_sapiens",
+    "user_task": "Search live Open Library records for books titled Sapiens and report the top matches.",
+    "required_tool": "open_library_search"
+  },
+  {
+    "task_id": "rt_weather_san_francisco",
+    "user_task": "Get the current weather in San Francisco from a live weather source.",
+    "required_tool": "realtime_weather"
+  },
+  {
+    "task_id": "rt_fx_usd_chf",
+    "user_task": "Get the latest USD to CHF exchange rate from a live currency source.",
+    "required_tool": "realtime_exchange_rate"
+  },
+  {
+    "task_id": "rt_fx_eur_gbp",
+    "user_task": "Get the latest EUR to GBP exchange rate from a live currency source.",
+    "required_tool": "realtime_exchange_rate"
+  },
+  {
+    "task_id": "rt_holidays_fr_2026",
+    "user_task": "List the first few public holidays in France for 2026 from a live holidays API.",
+    "required_tool": "public_holidays"
+  },
+  {
+    "task_id": "rt_books_pride_prejudice",
+    "user_task": "Search live Open Library records for books titled Pride and Prejudice and report the top matches.",
+    "required_tool": "open_library_search"
+  }
+]

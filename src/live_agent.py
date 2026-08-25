@@ -31,6 +31,7 @@ from mcp import ClientSession, StdioServerParameters, types
 from mcp.client.stdio import stdio_client
 
 from src.evaluation.capabilities import tools_to_capabilities
+from src.model_config import get_model_config
 from src.schemas import AgentTrace, CapabilityRequest, ToolCall
 from src.taxonomy import FailureType
 
@@ -40,8 +41,24 @@ TASKS_PATH = PROJECT_ROOT / "data" / "live_tasks.json"
 DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "data" / "live_traces.jsonl"
 
 DEFAULT_MODEL = "alias-huge-no-thinking"
-DEFAULT_BASE_URL = "https://llm.scads.ai/v1"
 MAX_STEPS = 6
+REALTIME_TOOLS = {
+    "open_library_search",
+    "public_holidays",
+    "realtime_earthquakes",
+    "realtime_exchange_rate",
+    "realtime_iss_position",
+    "realtime_weather",
+}
+GENERIC_EXTERNAL_SUBSTITUTES = {"run_python", "web_search"}
+REALTIME_SUBSTITUTES = {
+    "realtime_weather": {"weather_api"},
+    "realtime_exchange_rate": {"currency_converter"},
+    "realtime_earthquakes": set(),
+    "realtime_iss_position": set(),
+    "public_holidays": set(),
+    "open_library_search": set(),
+}
 
 SYSTEM_PROMPT = (
     "You are an assistant that completes tasks using the provided tools. "
@@ -87,11 +104,8 @@ def _mcp_tools_to_openai(
 def _make_client():
     from openai import OpenAI
 
-    api_key = os.environ.get("SCADS_API_KEY") or os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise EnvironmentError("Set SCADS_API_KEY (TUD:AI) before running the live agent.")
-    base_url = os.environ.get("SCADS_BASE_URL", DEFAULT_BASE_URL)
-    return OpenAI(api_key=api_key, base_url=base_url)
+    config = get_model_config(default_model=DEFAULT_MODEL)
+    return OpenAI(api_key=config.api_key, base_url=config.base_url)
 
 
 async def run_task(
@@ -314,7 +328,12 @@ async def collect_live_traces(
                         single = task.get("required_tool")
                         required = [single] if single else []
                     if required:
-                        runs.append(set(required))
+                        withhold = set(task.get("withhold_tools") or required)
+                        if set(required) & REALTIME_TOOLS:
+                            withhold |= GENERIC_EXTERNAL_SUBSTITUTES
+                            for tool_name in required:
+                                withhold |= REALTIME_SUBSTITUTES.get(tool_name, set())
+                        runs.append(withhold)
 
                 for withhold in runs:
                     trace = await run_task(
@@ -324,7 +343,7 @@ async def collect_live_traces(
                         withhold=withhold,
                         model=model,
                         client=client,
-                        gold_missing_tools=withhold if withhold else None,
+                        gold_missing_tools=set(required) if withhold else None,
                     )
                     traces.append(trace)
                     output_file.write(json.dumps(trace.model_dump(), ensure_ascii=False) + "\n")
@@ -349,7 +368,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--model",
-        default=os.environ.get("SCADS_MODEL", DEFAULT_MODEL),
+        default=get_model_config(default_model=DEFAULT_MODEL).model,
         help="TUD:AI model with tool-calling support.",
     )
     args = parser.parse_args()

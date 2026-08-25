@@ -14,10 +14,10 @@ import os
 import re
 from typing import Any, Callable
 
+from src.model_config import get_model_config
 from src.schemas import AgentTrace, Prediction
 from src.taxonomy import FailureType
 
-DEFAULT_BASE_URL = "https://llm.scads.ai/v1"
 DEFAULT_MODEL = "alias-ha"
 VALID_LABELS = [failure.value for failure in FailureType]
 
@@ -79,22 +79,19 @@ def _default_client_factory() -> Callable[..., Any]:
             "Install the openai package to use the LLM baseline: uv add openai"
         ) from exc
 
-    api_key = os.environ.get("SCADS_API_KEY") or os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise EnvironmentError(
-            "Set SCADS_API_KEY (TUD:AI) or OPENAI_API_KEY before running the LLM baseline."
-        )
-
-    base_url = os.environ.get("SCADS_BASE_URL", DEFAULT_BASE_URL)
-    model = os.environ.get("SCADS_MODEL", DEFAULT_MODEL)
-    client = OpenAI(api_key=api_key, base_url=base_url)
+    config = get_model_config(default_model=DEFAULT_MODEL)
+    client = OpenAI(api_key=config.api_key, base_url=config.base_url)
 
     def complete(messages: list[dict[str, str]]) -> str:
+        kwargs: dict[str, Any] = {
+            "model": config.model,
+            "messages": messages,
+            "temperature": 0,
+        }
+        if config.provider != "ollama":
+            kwargs["response_format"] = {"type": "json_object"}
         response = client.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=0,
-            response_format={"type": "json_object"},
+            **kwargs,
         )
         return response.choices[0].message.content or ""
 

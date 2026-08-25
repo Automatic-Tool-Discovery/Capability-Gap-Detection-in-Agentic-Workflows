@@ -1,0 +1,7 @@
+[
+  {
+    "task_id": "rt_holidays_ca_2026",
+    "user_task": "List the first few public holidays in Canada for 2026 from a live holidays API.",
+    "required_tool": "public_holidays"
+  }
+]

@@ -11,8 +11,12 @@ ground-truth F6 missing-capability examples for the rest of the project.
 from __future__ import annotations
 
 import ast
+import json
 import operator
+import urllib.parse
+import urllib.request
 from pathlib import Path
+from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
@@ -20,6 +24,14 @@ mcp = FastMCP("research_tools")
 
 FIXTURES = Path(__file__).resolve().parents[2] / "fixtures"
 BINARY_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".wav", ".gif"}
+CITY_COORDS = {
+    "berlin": (52.52, 13.405),
+    "dresden": (51.0504, 13.7373),
+    "london": (51.5072, -0.1276),
+    "new york": (40.7128, -74.0060),
+    "san francisco": (37.7749, -122.4194),
+    "tokyo": (35.6762, 139.6503),
+}
 
 SAFE_OPERATORS = {
     ast.Add: operator.add,
@@ -45,6 +57,15 @@ def _safe_eval(expression: str) -> float:
         right = _safe_eval(ast.unparse(node.right))
         return SAFE_OPERATORS[type(node.op)](left, right)
     raise ValueError("Invalid mathematical expression.")
+
+
+def _get_json(url: str) -> dict[str, Any]:
+    request = urllib.request.Request(url, headers={"User-Agent": "capability-gap-research/0.1"})
+    with urllib.request.urlopen(request, timeout=20) as response:
+        body = response.read().decode("utf-8").strip()
+        if not body:
+            raise ValueError(f"Empty response from {url}")
+        return json.loads(body)
 
 
 @mcp.tool()
@@ -208,6 +229,95 @@ def search_tickets(time_range: str = "", start_time: str = "", end_time: str = "
             "Unsupported time_range format. Expected ISO-8601 start_time and end_time fields."
         )
     return "Found 3 matching tickets."
+
+
+@mcp.tool()
+def realtime_weather(city: str) -> str:
+    """Returns current weather from the live Open-Meteo API for a supported city."""
+    coords = CITY_COORDS.get(city.strip().lower())
+    if coords is None:
+        raise ValueError(f"Unsupported city '{city}'. Supported: {', '.join(sorted(CITY_COORDS))}.")
+    latitude, longitude = coords
+    query = urllib.parse.urlencode(
+        {
+            "latitude": latitude,
+            "longitude": longitude,
+            "current": "temperature_2m,wind_speed_10m",
+            "timezone": "auto",
+        }
+    )
+    data = _get_json(f"https://api.open-meteo.com/v1/forecast?{query}")
+    current = data.get("current", {})
+    return (
+        f"Open-Meteo current weather for {city}: "
+        f"temperature={current.get('temperature_2m')}C, "
+        f"wind_speed={current.get('wind_speed_10m')}km/h, "
+        f"time={current.get('time')}"
+    )
+
+
+@mcp.tool()
+def realtime_exchange_rate(base_currency: str, quote_currency: str) -> str:
+    """Returns the latest exchange rate from Frankfurter's public currency API."""
+    base = base_currency.strip().upper()
+    quote = quote_currency.strip().upper()
+    data = _get_json(f"https://api.frankfurter.app/latest?from={base}&to={quote}")
+    rate = (data.get("rates") or {}).get(quote)
+    if rate is None:
+        raise ValueError(f"No rate returned for {base}/{quote}.")
+    return f"Frankfurter latest rate on {data.get('date')}: 1 {base} = {rate} {quote}"
+
+
+@mcp.tool()
+def realtime_earthquakes(min_magnitude: float = 4.5) -> str:
+    """Returns recent earthquake data from the live USGS GeoJSON feed."""
+    data = _get_json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_day.geojson")
+    features = data.get("features", [])
+    matches = []
+    for feature in features:
+        props = feature.get("properties", {})
+        magnitude = props.get("mag")
+        if magnitude is not None and float(magnitude) >= min_magnitude:
+            matches.append(f"M{magnitude} {props.get('place')} at {props.get('time')}")
+    if not matches:
+        return f"No significant earthquakes at or above M{min_magnitude} in the current USGS daily feed."
+    return "Recent significant earthquakes: " + "; ".join(matches[:5])
+
+
+@mcp.tool()
+def realtime_iss_position() -> str:
+    """Returns the current International Space Station position from Open Notify."""
+    data = _get_json("http://api.open-notify.org/iss-now.json")
+    position = data.get("iss_position", {})
+    return (
+        "Current ISS position: "
+        f"latitude={position.get('latitude')}, longitude={position.get('longitude')}, "
+        f"timestamp={data.get('timestamp')}"
+    )
+
+
+@mcp.tool()
+def public_holidays(country_code: str, year: int) -> str:
+    """Returns public holidays from the live Nager.Date public holidays API."""
+    code = country_code.strip().upper()
+    data = _get_json(f"https://date.nager.at/api/v3/PublicHolidays/{year}/{code}")
+    holidays = [f"{item.get('date')} {item.get('localName')}" for item in data[:5]]
+    return f"First public holidays for {code} in {year}: " + "; ".join(holidays)
+
+
+@mcp.tool()
+def open_library_search(title: str) -> str:
+    """Searches live Open Library records for books matching a title."""
+    query = urllib.parse.urlencode({"title": title, "limit": 3})
+    data = _get_json(f"https://openlibrary.org/search.json?{query}")
+    docs = data.get("docs", [])
+    if not docs:
+        return f"No Open Library records found for title '{title}'."
+    results = []
+    for doc in docs[:3]:
+        authors = ", ".join(doc.get("author_name", [])[:2]) or "unknown author"
+        results.append(f"{doc.get('title')} by {authors}, first_publish_year={doc.get('first_publish_year')}")
+    return "Open Library matches: " + "; ".join(results)
 
 
 if __name__ == "__main__":

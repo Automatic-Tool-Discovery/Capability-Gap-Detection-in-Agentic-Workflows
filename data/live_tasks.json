@@ -28,5 +28,50 @@
     "task_id": "recent_email_lookup",
     "user_task": "Find emails from supervisor@example.com from the last 24 hours and summarize whether there is a new meeting request.",
     "required_tool": "search_emails"
+  },
+  {
+    "task_id": "ticket_search_incidents",
+    "user_task": "Search customer tickets between 2026-08-21T00:00:00Z and 2026-08-22T00:00:00Z and tell me how many matching tickets exist.",
+    "required_tool": "search_tickets"
+  },
+  {
+    "task_id": "shipped_order_lookup",
+    "user_task": "Find one shipped order in the toy database and report its order id.",
+    "required_tool": "sql_query"
+  },
+  {
+    "task_id": "csv_user_count",
+    "user_task": "Open users.csv and tell me how many user records are listed.",
+    "required_tool": "csv_reader"
+  },
+  {
+    "task_id": "report_text_summary",
+    "user_task": "Read report.txt and summarize its main point in one sentence.",
+    "required_tool": "read_file"
+  },
+  {
+    "task_id": "web_search_mcp",
+    "user_task": "Search the web for recent discussion of MCP tool servers and summarize the search result.",
+    "required_tool": "web_search"
+  },
+  {
+    "task_id": "pdf_creation",
+    "user_task": "Create a PDF titled 'Capability Gap Experiment Notes'.",
+    "required_tool": "create_pdf"
+  },
+  {
+    "task_id": "email_reminder",
+    "user_task": "Send an email to team@example.com with the subject 'Reminder' and the body 'Please upload the experiment logs today.'",
+    "required_tool": "send_email"
+  },
+  {
+    "task_id": "eur_inr_conversion",
+    "user_task": "Convert 25 euros to Indian rupees and tell me the result.",
+    "required_tool": "currency_converter"
+  },
+  {
+    "task_id": "weather_dresden",
+    "user_task": "What is the current weather in Dresden?",
+    "required_tool": "weather_api"
   }
 ]
