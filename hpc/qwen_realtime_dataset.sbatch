@@ -44,6 +44,7 @@ python -m src.live_agent \
 python -m src.live_agent \
   --tasks data/live_realtime_replacement_tasks.json \
   --output data/live_realtime_replacement_traces_qwen3.jsonl \
-  --mode both
+  --mode gap \
+  --append
 
 python scripts/build_clean_realtime_dataset.py

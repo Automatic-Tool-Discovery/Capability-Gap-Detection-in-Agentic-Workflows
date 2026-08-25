@@ -296,6 +296,7 @@ async def collect_live_traces(
     *,
     mode: str,
     model: str,
+    append: bool = False,
 ) -> list[AgentTrace]:
     tasks = json.loads(tasks_path.read_text(encoding="utf-8"))
     client = _make_client()
@@ -314,7 +315,8 @@ async def collect_live_traces(
         await session.initialize()
         mcp_tools = (await session.list_tools()).tools
 
-        with output_path.open("w", encoding="utf-8") as output_file:
+        file_mode = "a" if append else "w"
+        with output_path.open(file_mode, encoding="utf-8") as output_file:
             for task in tasks:
                 runs: list[set[str]] = []
                 if mode in {"control", "both"}:
@@ -371,9 +373,20 @@ def main() -> None:
         default=get_model_config(default_model=DEFAULT_MODEL).model,
         help="TUD:AI model with tool-calling support.",
     )
+    parser.add_argument(
+        "--append",
+        action="store_true",
+        help="Append generated traces to the output file instead of overwriting it.",
+    )
     args = parser.parse_args()
     asyncio.run(
-        collect_live_traces(args.tasks, args.output, mode=args.mode, model=args.model)
+        collect_live_traces(
+            args.tasks,
+            args.output,
+            mode=args.mode,
+            model=args.model,
+            append=args.append,
+        )
     )
 
 
