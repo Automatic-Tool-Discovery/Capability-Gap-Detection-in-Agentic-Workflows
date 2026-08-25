@@ -27,7 +27,7 @@ if [[ ! -f "${IMAGE}" ]]; then
   exit 1
 fi
 
-apptainer exec \
+apptainer exec --nv \
   --bind "${SLURM_SUBMIT_DIR}:${SLURM_SUBMIT_DIR}" \
   --env OLLAMA_HOST="${OLLAMA_HOST}" \
   --env OLLAMA_MODELS="${OLLAMA_MODELS}" \
@@ -38,7 +38,7 @@ trap 'kill ${OLLAMA_PID} || true' EXIT
 
 sleep 15
 
-apptainer exec \
+apptainer exec --nv \
   --bind "${SLURM_SUBMIT_DIR}:${SLURM_SUBMIT_DIR}" \
   --env OLLAMA_HOST="${OLLAMA_HOST}" \
   --env OLLAMA_MODELS="${OLLAMA_MODELS}" \
