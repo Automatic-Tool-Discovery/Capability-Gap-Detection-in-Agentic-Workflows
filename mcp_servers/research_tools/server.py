@@ -31,6 +31,20 @@ CITY_COORDS = {
     "new york": (40.7128, -74.0060),
     "san francisco": (37.7749, -122.4194),
     "tokyo": (35.6762, 139.6503),
+    "paris": (48.8566, 2.3522),
+    "rome": (41.9028, 12.4964),
+    "madrid": (40.4168, -3.7038),
+    "toronto": (43.6532, -79.3832),
+    "vancouver": (49.2827, -123.1207),
+    "sydney": (-33.8688, 151.2093),
+    "melbourne": (-37.8136, 144.9631),
+    "delhi": (28.6139, 77.2090),
+    "mumbai": (19.0760, 72.8777),
+    "singapore": (1.3521, 103.8198),
+    "seoul": (37.5665, 126.9780),
+    "amsterdam": (52.3676, 4.9041),
+    "nairobi": (-1.2921, 36.8219),
+    "cairo": (30.0444, 31.2357),
 }
 
 SAFE_OPERATORS = {
@@ -318,6 +332,89 @@ def open_library_search(title: str) -> str:
         authors = ", ".join(doc.get("author_name", [])[:2]) or "unknown author"
         results.append(f"{doc.get('title')} by {authors}, first_publish_year={doc.get('first_publish_year')}")
     return "Open Library matches: " + "; ".join(results)
+
+
+@mcp.tool()
+def pdf_text_extractor(file_path: str) -> str:
+    """Extracts text from a PDF document."""
+    path = _resolve_path(file_path)
+    if path.suffix.lower() != ".pdf":
+        raise ValueError("Expected a PDF file.")
+    if not path.exists():
+        raise FileNotFoundError(f"{file_path} does not exist in the current directory.")
+    return "Capability Gap Report: agents fail when required tools are unavailable."
+
+
+@mcp.tool()
+def image_ocr(file_path: str) -> str:
+    """Extracts visible text from an image file."""
+    path = _resolve_path(file_path)
+    if path.suffix.lower() not in {".png", ".jpg", ".jpeg"}:
+        raise ValueError("Expected an image file.")
+    if not path.exists():
+        raise FileNotFoundError(f"{file_path} does not exist in the current directory.")
+    return "Experiment note: validate capability gaps with held-out tool families."
+
+
+@mcp.tool()
+def geocode_address(address: str) -> str:
+    """Converts a street address or place name into latitude and longitude."""
+    normalized = address.strip().lower()
+    if "tu dresden" in normalized:
+        return "TU Dresden: latitude=51.0280, longitude=13.7266"
+    if "brandenburg gate" in normalized:
+        return "Brandenburg Gate: latitude=52.5163, longitude=13.3777"
+    raise ValueError("Address not found in the geocoding index.")
+
+
+@mcp.tool()
+def package_tracking(tracking_number: str) -> str:
+    """Looks up the current shipping status for a package tracking number."""
+    tracking_number = tracking_number.strip().upper()
+    if tracking_number == "DEMO123":
+        return "DEMO123 status: out for delivery, last scan Dresden 08:42."
+    if tracking_number == "FLAKY500":
+        raise RuntimeError("Carrier API temporarily unavailable.")
+    raise ValueError("Unknown tracking number.")
+
+
+@mcp.tool()
+def stock_quote(symbol: str) -> str:
+    """Returns a latest stock quote for a ticker symbol."""
+    symbol = symbol.strip().upper()
+    prices = {"AAPL": "226.80", "MSFT": "507.23", "NVDA": "181.77"}
+    if symbol not in prices:
+        raise ValueError("Ticker not found.")
+    return f"Latest quote for {symbol}: {prices[symbol]} USD."
+
+
+@mcp.tool()
+def crm_lookup(customer_name: str) -> str:
+    """Looks up private customer information in a CRM."""
+    normalized = customer_name.strip().lower()
+    if normalized == "acme labs":
+        return "Acme Labs: owner=Riya, renewal_date=2026-09-15, plan=Enterprise."
+    if normalized == "globex":
+        return "Globex: owner=Mateo, renewal_date=2026-10-02, plan=Team."
+    raise ValueError("Customer not found.")
+
+
+@mcp.tool()
+def document_signature_request(recipient_email: str, document_title: str) -> str:
+    """Sends a document-signature request to a recipient."""
+    if not recipient_email or "@" not in recipient_email:
+        raise ValueError("Valid recipient_email is required.")
+    if not document_title:
+        raise ValueError("document_title is required.")
+    return f"Signature request for '{document_title}' sent to {recipient_email}."
+
+
+@mcp.tool()
+def certified_translation(text: str, target_language: str) -> str:
+    """Creates a certified translation suitable for official submission."""
+    if not text.strip():
+        raise ValueError("No text provided for certified translation.")
+    return f"Certified {target_language} translation prepared for official submission."
 
 
 if __name__ == "__main__":

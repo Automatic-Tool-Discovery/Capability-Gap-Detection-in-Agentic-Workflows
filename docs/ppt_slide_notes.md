@@ -1,88 +1,29 @@
-# Interim PPT Slide Notes
+# Presentation outline
 
-## Problem
+Use this outline for the final project presentation. Add numerical results only after a current controlled-pilot run has completed and its saved predictions have been inspected.
 
-Tool-using agents fail for different reasons. This project focuses on one
-specific class: capability gaps.
+## 1. Problem
 
-## Definition
+Agents can fail because of reasoning mistakes, tool errors, missing information, or a necessary ability absent from their available tools. This project focuses on detecting the last case (F6).
 
-A capability gap is present when the task requires a non-substitutable external
-capability that is absent from the agent's available toolset, and the task cannot
-be completed reliably by model knowledge or another available tool.
+## 2. Method
 
-Includes:
+- `llm-fair`: direct LLM failure judge.
+- `capmatch-fair`: identify task-required abilities, compare them with available tool capabilities, and produce a structured capability request when an ability appears absent.
+- Both receive equivalent trace evidence; condition labels and gold fields stay hidden until scoring.
 
-- missing tool/API;
-- missing live or private data access;
-- missing authenticated action;
-- missing external service.
+## 3. Experiment
 
-Excludes:
+Show the 120-prompt project-authored paired tool-withholding pilot: full-tool runs versus runs with a target capability withheld. Report completed pairs, six capability-family clusters, and condition-detection metrics. Label it a controlled pilot; withholding assignment is the target, not a natural failure label or 120 independent capability families.
 
-- wrong tool choice;
-- wrong parameters;
-- tool runtime error;
-- missing user information;
-- simple tasks solvable from model knowledge.
+## 4. Dataset feasibility
 
-## Method
+The natural-source index contains 2,414 records. A desk-screen of 124 keyword hits found zero verified natural F6 positives and 12 unresolved media/file cases. This is evidence that suitable labels were not established in the reviewed sources, not proof that such failures never occur.
 
-Baseline:
+## 5. Results
 
-- `llm-fair`: generic LLM-as-judge over F0-F8.
+Populate from `outputs/controlled_gap_pilot_120/summary.json` only after the run is complete. Include failures/missing outputs and per-family results. Do not use perfect scores from archived `all`-split summaries as held-out results: those summaries list the same 60 examples for training and testing.
 
-Proposed method:
+## 6. Limitations and next work
 
-- `capmatch-fair`: extract required capabilities, compare against available
-  capabilities, label F6 if missing, and emit a structured capability request.
-
-## Current Result
-
-Controlled live MCP gap traces:
-
-| method | accuracy | F6 F1 | binary gap F1 |
-|---|---:|---:|---:|
-| `llm-fair` | 0.833 | 0.909 | 0.909 |
-| `capmatch-fair` | 1.000 | 1.000 | 1.000 |
-
-Main observed failure of baseline:
-
-- `llm-fair` mislabeled a missing currency-conversion capability as success
-  because an unrelated tool call reported successful execution.
-- `capmatch-fair` correctly identified `currency_conversion` as missing.
-
-## Contribution
-
-The method does not only diagnose F6. It emits a structured missing-capability
-request: name, capability, inputs, outputs, and rationale.
-
-## MCP-Atlas Plan
-
-MCP-Atlas does not directly provide capability-gap labels. We generate candidate
-gaps by paired ablation:
-
-1. Run original MCP-Atlas task with original tools.
-2. Remove one required tool from `ENABLED_TOOLS`.
-3. Run the same task again.
-4. Compare official evaluator coverage.
-5. Promote only stable score drops to validated candidate gaps after checking
-   non-substitutability.
-
-Prepared files:
-
-- `outputs/mcp_atlas_runs/baseline_all.csv`
-- `outputs/mcp_atlas_runs/ablated_all.csv`
-- `outputs/mcp_atlas_runs/manifest.json`
-
-## Current Blocker
-
-Romeo HPC setup succeeded for file access and environment checks, but Slurm job
-execution is blocked:
-
-```text
-p_scads_lv_llm has been locked: Lecture ended. Project open for fileaccess only. No Jobs.
-```
-
-Next action: obtain active CPU allocation or ask Omar to run the one-task
-MCP-Atlas smoke using the prepared input packet.
+The controlled prompts are project-authored and clustered into six families. Natural F6 performance, independent labels, broader generalization, and the semantic quality of generated capability requests remain open questions. A larger natural-failure evaluation requires cases with complete tool inventories and verified outcomes.

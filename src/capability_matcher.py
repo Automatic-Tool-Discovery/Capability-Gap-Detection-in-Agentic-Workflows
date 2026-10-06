@@ -29,11 +29,11 @@ from typing import Any, Callable
 
 from src import llm_classifier
 from src.evaluation.capabilities import (
-    NON_CAPABILITY_TOOLS,
     normalize_tool_name,
 )
 from src.schemas import AgentTrace, CapabilityRequest, Prediction
 from src.taxonomy import FailureType
+from src.trace_evidence import available_capabilities, trace_evidence
 
 F6_LABEL = FailureType.MISSING_CAPABILITY_GAP.value
 
@@ -86,32 +86,11 @@ The "capability_request" field may be omitted (or null) when matched_available i
 
 
 def _available_capability_set(trace: AgentTrace) -> set[str]:
-    """Normalized set of capabilities the trace actually has available."""
-    caps: set[str] = set(trace.capabilities or [])
-    # Fall back to deriving from tool names if capabilities weren't precomputed.
-    if not caps and trace.available_tools:
-        from src.evaluation.capabilities import tools_to_capabilities
-
-        caps = set(tools_to_capabilities(trace.available_tools))
-    normalized = {normalize_tool_name(c) for c in caps}
-    normalized -= {normalize_tool_name(t) for t in NON_CAPABILITY_TOOLS}
-    return normalized
+    return available_capabilities(trace)
 
 
 def _matcher_payload(trace: AgentTrace, *, use_failure_explanation: bool) -> dict[str, Any]:
-    available = sorted(_available_capability_set(trace))
-    payload: dict[str, Any] = {
-        "user_task": trace.user_task,
-        "available_capabilities": available,
-        "available_tools": trace.available_tools,
-        "tool_calls": [
-            {"tool_name": c.tool_name, "error": c.error} for c in trace.tool_calls
-        ],
-        "final_response": trace.final_response,
-    }
-    if use_failure_explanation and trace.failure_explanation:
-        payload["failure_explanation"] = trace.failure_explanation
-    return payload
+    return trace_evidence(trace, use_failure_explanation=use_failure_explanation)
 
 
 def _parse_json_response(content: str) -> dict[str, Any]:

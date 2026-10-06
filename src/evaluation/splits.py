@@ -9,36 +9,14 @@ live MCP traces and external benchmark adapters.
 
 from __future__ import annotations
 
-import ast
-import re
 from pathlib import Path
 from typing import Callable, Iterator
 
 from sklearn.model_selection import LeaveOneOut, StratifiedKFold, train_test_split
 
 from src.schemas import AgentTrace
-from src.evaluation.capabilities import tools_to_capabilities
-from src.taxonomy import FailureType
 
-LIVE_PATH = Path("data/live_traces.jsonl")
-
-
-def _add_legacy_gap_ground_truth(trace: AgentTrace) -> AgentTrace:
-    """Backfill old live traces written before gold capability fields existed."""
-    if trace.gold_missing_capabilities or not trace.failure_explanation:
-        return trace
-    match = re.search(r"Required tool\(s\) (\[[^\]]*\]) were withheld", trace.failure_explanation)
-    if not match:
-        return trace
-    try:
-        tools = ast.literal_eval(match.group(1))
-    except (SyntaxError, ValueError):
-        return trace
-    if isinstance(tools, list):
-        trace.gold_missing_capabilities = tools_to_capabilities(
-            [str(tool) for tool in tools]
-        )
-    return trace
+LIVE_PATH = Path("outputs/traces/live_traces.jsonl")
 
 
 def load_traces(paths: list[Path]) -> list[AgentTrace]:
@@ -50,22 +28,16 @@ def load_traces(paths: list[Path]) -> list[AgentTrace]:
             for line in handle:
                 if line.strip():
                     trace = AgentTrace.model_validate_json(line)
-                    traces.append(_add_legacy_gap_ground_truth(trace))
+                    traces.append(trace)
     return traces
 
 
 def label_clean_controls_as_success(traces: list[AgentTrace]) -> list[AgentTrace]:
-    """Treat unlabeled clean control traces as F0 for paired live evaluations."""
-    labeled: list[AgentTrace] = []
-    for trace in traces:
-        if trace.gold_label is None and trace.source == "mcp-live":
-            has_tool_error = any(call.error for call in trace.tool_calls)
-            if trace.tool_calls and not has_tool_error:
-                trace = trace.model_copy(
-                    update={"gold_label": FailureType.SUCCESS_NO_FAILURE.value}
-                )
-        labeled.append(trace)
-    return labeled
+    """Reject the retired surface-feature labeling heuristic."""
+    raise ValueError(
+        "Automatic F0 labeling is disabled: error-free calls do not verify task success. "
+        "Provide outcome-reviewed gold labels instead."
+    )
 
 
 def labeled_traces(traces: list[AgentTrace]) -> list[AgentTrace]:

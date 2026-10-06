@@ -24,7 +24,6 @@ from src.evaluation.splits import (
     get_splitter,
     iter_leave_one_out,
     iter_stratified_kfold,
-    label_clean_controls_as_success,
     load_traces,
     split_random,
 )
@@ -71,6 +70,8 @@ def run_evaluation(
     train_traces: list[AgentTrace],
     test_traces: list[AgentTrace],
 ) -> EvaluationResult:
+    if not any(trace.gold_label is not None for trace in test_traces):
+        raise ValueError("No labeled traces in evaluation set; review outcomes before running classifiers.")
     classifier = METHODS[method]
     predictions = [classifier(trace) for trace in test_traces]
     return evaluate_predictions(
@@ -220,9 +221,11 @@ def main() -> None:
     parser.add_argument(
         "--label-clean-controls",
         action="store_true",
-        help="Treat clean unlabeled live MCP control traces as F0_success.",
+        help="Retired: automatic success labeling is no longer supported.",
     )
     args = parser.parse_args()
+    if args.label_clean_controls:
+        parser.error("--label-clean-controls is retired; provide outcome-reviewed gold labels.")
 
     trace_paths = args.traces if args.traces else DEFAULT_TRACE_PATHS
     traces = [] if args.agentrx_only else load_traces(trace_paths)
@@ -244,8 +247,6 @@ def main() -> None:
 
     if not traces:
         raise SystemExit("No traces found for evaluation.")
-    if args.label_clean_controls:
-        traces = label_clean_controls_as_success(traces)
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     summaries: list[dict] = []

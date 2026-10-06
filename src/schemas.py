@@ -8,9 +8,30 @@ is the contract between live trace generation, benchmark adapters, evaluation,
 and the capability matcher.
 """
 
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
+
+
+class ExperimentCondition(BaseModel):
+    """Author's scenario intent, never ground truth or classifier evidence."""
+
+    task_id: str
+    pair_id: str
+    condition: Literal["control", "gap", "custom"]
+    withheld_tools: list[str] = Field(default_factory=list)
+    intended_missing_capabilities: list[str] = Field(default_factory=list)
+    expected_label: Optional[str] = None
+
+
+class TraceAnnotation(BaseModel):
+    """Review provenance; legacy means verification has not been established."""
+
+    status: Literal["legacy", "unreviewed", "unresolved", "verified"] = "legacy"
+    outcome: Literal["unknown", "success", "failure"] = "unknown"
+    reviewer: Optional[str] = None
+    evidence: list[str] = Field(default_factory=list)
+    method: Optional[str] = None
 
 
 class ToolCall(BaseModel):
@@ -46,10 +67,28 @@ class AgentTrace(BaseModel):
     source: Optional[str] = None
     domain: Optional[str] = None
     capabilities: list[str] = []
+    schema_version: int = 1
+    experiment: Optional[ExperimentCondition] = None
+    annotation: TraceAnnotation = Field(default_factory=TraceAnnotation)
+    inventory_complete: Optional[bool] = None
+    provenance: dict[str, Any] = Field(default_factory=dict)
     # Evaluation-only ground truth. Classifiers must not include these fields in
-    # their prompts; benchmark builders populate them when a tool is withheld.
+    # their prompts. Withholding alone must not populate these fields.
     gold_missing_capabilities: list[str] = []
     gold_capability_requests: list["CapabilityRequest"] = []
+
+    @model_validator(mode="after")
+    def validate_annotation(self):
+        if self.annotation.status in {"unreviewed", "unresolved"} and (
+            self.gold_label is not None or self.gold_missing_capabilities or self.gold_capability_requests
+        ):
+            raise ValueError("Unreviewed or unresolved traces cannot carry gold annotations.")
+        if self.annotation.status == "verified" and (
+            not self.gold_label or not self.annotation.evidence or not self.annotation.reviewer
+            or not self.annotation.method or self.annotation.outcome == "unknown"
+        ):
+            raise ValueError("Verified annotations require a label, outcome, reviewer, method and evidence.")
+        return self
 
 
 class CapabilityRequest(BaseModel):

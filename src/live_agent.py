@@ -3,9 +3,8 @@
 A real LLM decides which tools to call, calls them on the live MCP server,
 observes the real results, and we record whatever actually happens.
 
-Capability gaps (F6) are produced *dynamically* and with ground truth: we run a
-task while **withholding** the tool it needs, so the agent genuinely gets stuck.
-Because we chose which tool to withhold, we know the exact missing capability.
+Withholding creates an experimental condition, not a verified failure label.
+Generated runs remain unreviewed until task outcomes and alternatives are checked.
 
 Requires a TUD:AI model with tool/function-calling support (e.g.
 ``alias-huge-no-thinking``). Set SCADS_API_KEY (and optionally SCADS_MODEL).
@@ -24,6 +23,8 @@ import json
 import os
 import sys
 from contextlib import AsyncExitStack
+from datetime import datetime, timezone
+from uuid import uuid4
 from pathlib import Path
 from typing import Any
 
@@ -32,13 +33,12 @@ from mcp.client.stdio import stdio_client
 
 from src.evaluation.capabilities import tools_to_capabilities
 from src.model_config import get_model_config
-from src.schemas import AgentTrace, CapabilityRequest, ToolCall
-from src.taxonomy import FailureType
+from src.schemas import AgentTrace, ExperimentCondition, TraceAnnotation, ToolCall
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SERVER_SCRIPT = PROJECT_ROOT / "mcp_servers" / "research_tools" / "server.py"
-TASKS_PATH = PROJECT_ROOT / "data" / "live_tasks.json"
-DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "data" / "live_traces.jsonl"
+TASKS_PATH = PROJECT_ROOT / "data" / "live_task_suites.json"
+DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "outputs" / "traces" / "live_traces.jsonl"
 
 DEFAULT_MODEL = "alias-huge-no-thinking"
 MAX_STEPS = 6
@@ -126,7 +126,14 @@ async def run_task(
     model: str,
     client: Any,
     gold_missing_tools: set[str] | None = None,
+    expected_label: str | None = None,
+    pair_id: str | None = None,
+    condition: str | None = None,
 ) -> AgentTrace:
+    # Reject configuration typos before running the model.
+    unknown = withhold - {tool.name for tool in mcp_tools}
+    if unknown:
+        raise ValueError(f"Unknown withheld tools: {', '.join(sorted(unknown))}")
     openai_tools, offered = _mcp_tools_to_openai(mcp_tools, withhold)
     messages: list[dict[str, Any]] = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -177,6 +184,8 @@ async def run_task(
                 arguments = {}
 
             try:
+                if name not in offered:
+                    raise ValueError("not in the enabled tool inventory")
                 result = await session.call_tool(name, arguments=arguments)
                 error = _tool_text(result) if result.isError else None
                 observation = None if error else _tool_text(result)
@@ -201,67 +210,36 @@ async def run_task(
                 }
             )
 
-    is_gap = bool(gold_missing_tools)
-    gold_label = FailureType.MISSING_CAPABILITY_GAP.value if is_gap else None
-    failure_explanation = (
-        f"Required tool(s) {sorted(gold_missing_tools or set())} were withheld from the agent, "
-        "so the task cannot be completed with the available tools."
-        if is_gap
-        else None
+    # gold_missing_tools is a legacy argument name: it records intent ONLY.
+    suffix = condition or ("gap" if gold_missing_tools else ("custom" if withhold else "control"))
+    experiment = ExperimentCondition(
+        task_id=task["task_id"],
+        pair_id=pair_id or str(uuid4()),
+        condition=suffix,
+        withheld_tools=sorted(withhold),
+        intended_missing_capabilities=tools_to_capabilities(sorted(gold_missing_tools or set())),
+        expected_label=expected_label,
     )
-    suffix = "gap" if is_gap else ("custom" if withhold else "control")
-    schemas_by_name = {tool.name: tool for tool in mcp_tools}
-    gold_requests = []
-    for tool_name in sorted(gold_missing_tools or set()):
-        tool = schemas_by_name.get(tool_name)
-        if tool is None:
-            continue
-        input_schema = tool.inputSchema or {}
-        output_schema = tool.outputSchema or {}
-        gold_requests.append(
-            CapabilityRequest(
-                name=tool.name,
-                capability=tools_to_capabilities([tool.name])[0],
-                description=tool.description or f"Provides the {tool.name} capability.",
-                inputs=[
-                    {
-                        "name": name,
-                        "type": details.get("type", "any"),
-                        "description": details.get("description", ""),
-                        "required": name in input_schema.get("required", []),
-                    }
-                    for name, details in input_schema.get("properties", {}).items()
-                ],
-                outputs=[
-                    {
-                        "name": name,
-                        "type": details.get("type", "any"),
-                        "description": details.get("description", ""),
-                    }
-                    for name, details in output_schema.get("properties", {}).items()
-                ],
-                rationale=f"This withheld tool is required to complete: {task['user_task']}",
-            )
-        )
 
     return AgentTrace(
+        schema_version=2,
         trace_id=f"live_{task['task_id']}_{suffix}",
         user_task=task["user_task"],
         available_tools=offered,
         agent_plan=None,
         tool_calls=recorded_calls,
         final_response=final_response,
-        gold_label=gold_label,
-        failure_explanation=failure_explanation,
+        experiment=experiment,
+        annotation=TraceAnnotation(status="unreviewed"),
+        inventory_complete=True,
+        provenance={"generator": "src.live_agent", "model": model,
+                    "recorded_at": datetime.now(timezone.utc).isoformat()},
         mcp_servers=["research_tools"],
         tool_schemas={tool.name: tool.model_dump() for tool in mcp_tools if tool.name in offered},
         source="mcp-live",
         domain="mcp_research_tools",
         capabilities=tools_to_capabilities(offered),
-        gold_missing_capabilities=tools_to_capabilities(
-            sorted(gold_missing_tools or set())
-        ),
-        gold_capability_requests=gold_requests,
+
     )
 
 
@@ -301,9 +279,22 @@ async def collect_live_traces(
     *,
     mode: str,
     model: str,
+    suite: str | None = None,
     append: bool = False,
 ) -> list[AgentTrace]:
-    tasks = json.loads(tasks_path.read_text(encoding="utf-8"))
+    task_data = json.loads(tasks_path.read_text(encoding="utf-8"))
+    if isinstance(task_data, dict):
+        suites = task_data.get("suites", {})
+        suite_name = suite or task_data.get("default_suite")
+        if not suite_name:
+            raise ValueError(f"{tasks_path} contains suites but no default_suite.")
+        if suite_name not in suites:
+            raise ValueError(
+                f"Unknown task suite '{suite_name}'. Options: {', '.join(sorted(suites))}"
+            )
+        tasks = suites[suite_name]
+    else:
+        tasks = task_data
     client = _make_client()
     traces: list[AgentTrace] = []
 
@@ -319,26 +310,29 @@ async def collect_live_traces(
         file_mode = "a" if append else "w"
         with output_path.open(file_mode, encoding="utf-8") as output_file:
             for task in tasks:
-                runs: list[set[str]] = []
+                pair_id = str(uuid4())
+                runs: list[tuple[set[str], bool]] = []
+                allowed_modes = set(task.get("run_modes") or ["control", "gap"])
+                required = task.get("required_tools")
+                if not required:
+                    single = task.get("required_tool")
+                    required = [single] if single else []
                 if mode in {"control", "both"}:
-                    runs.append(set())
-                if mode in {"gap", "both"}:
+                    if "control" in allowed_modes:
+                        runs.append((set(task.get("control_withhold_tools") or []), False))
+                if mode in {"gap", "both"} and "gap" in allowed_modes:
                     # A capability gap requires withholding *all* tools that can
                     # provide the needed capability, not just one - otherwise the
                     # agent substitutes (e.g. run_python instead of calculator).
-                    required = task.get("required_tools")
-                    if not required:
-                        single = task.get("required_tool")
-                        required = [single] if single else []
                     if required:
                         withhold = set(task.get("withhold_tools") or required)
                         if set(required) & REALTIME_TOOLS:
                             withhold |= GENERIC_EXTERNAL_SUBSTITUTES
                             for tool_name in required:
                                 withhold |= REALTIME_SUBSTITUTES.get(tool_name, set())
-                        runs.append(withhold)
+                        runs.append((withhold, True))
 
-                for withhold in runs:
+                for withhold, is_gap_run in runs:
                     trace = await run_task(
                         session,
                         mcp_tools,
@@ -346,7 +340,10 @@ async def collect_live_traces(
                         withhold=withhold,
                         model=model,
                         client=client,
-                        gold_missing_tools=set(required) if withhold else None,
+                        gold_missing_tools=set(required) if is_gap_run else None,
+                        expected_label=task.get("expected_label"),
+                        pair_id=pair_id,
+                        condition="gap" if is_gap_run else "control",
                     )
                     traces.append(trace)
                     output_file.write(json.dumps(trace.model_dump(), ensure_ascii=False) + "\n")
@@ -362,16 +359,21 @@ async def collect_live_traces(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate dynamic agent traces via live MCP tool use.")
     parser.add_argument("--tasks", type=Path, default=TASKS_PATH, help="Live task definitions.")
+    parser.add_argument(
+        "--suite",
+        default=None,
+        help="Suite name when --tasks points to a multi-suite task file.",
+    )
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT_PATH, help="Output traces file.")
     parser.add_argument(
         "--mode",
         choices=["both", "control", "gap"],
         default="both",
-        help="control = full toolset; gap = withhold required tool (ground-truth F6); both.",
+        help="control/gap are scenario conditions; all generated gold labels remain unset.",
     )
     parser.add_argument(
         "--model",
-        default=get_model_config(default_model=DEFAULT_MODEL).model,
+        default=None,
         help="TUD:AI model with tool-calling support.",
     )
     parser.add_argument(
@@ -385,7 +387,8 @@ def main() -> None:
             args.tasks,
             args.output,
             mode=args.mode,
-            model=args.model,
+            model=args.model or get_model_config(default_model=DEFAULT_MODEL).model,
+            suite=args.suite,
             append=args.append,
         )
     )

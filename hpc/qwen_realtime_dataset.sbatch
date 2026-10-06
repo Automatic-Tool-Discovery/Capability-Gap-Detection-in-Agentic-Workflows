@@ -4,14 +4,14 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=02:00:00
+#SBATCH --time=08:00:00
 #SBATCH --output=outputs/hpc/qwen-realtime-%j.out
 #SBATCH --error=outputs/hpc/qwen-realtime-%j.err
 
 set -euo pipefail
 
 cd "${SLURM_SUBMIT_DIR}"
-mkdir -p outputs/hpc
+mkdir -p outputs/hpc outputs/traces
 
 export MODEL_PROVIDER=ollama
 export MODEL_NAME="${MODEL_NAME:-qwen3:8b}"
@@ -37,14 +37,9 @@ ollama pull "${MODEL_NAME}"
 python scripts/smoke_model_tool_calling.py
 
 python -m src.live_agent \
-  --tasks data/live_realtime_tasks.json \
-  --output data/live_realtime_traces_qwen3.jsonl \
+  --tasks data/live_task_suites.json \
+  --suite realtime_120 \
+  --output outputs/traces/live_realtime_120_traces_qwen3.jsonl \
   --mode both
 
-python -m src.live_agent \
-  --tasks data/live_realtime_replacement_tasks.json \
-  --output data/live_realtime_replacement_traces_qwen3.jsonl \
-  --mode gap \
-  --append
-
-python scripts/build_clean_realtime_dataset.py
+echo "Raw paired pilot traces saved. They are unreviewed; run the controlled-pilot evaluator separately."

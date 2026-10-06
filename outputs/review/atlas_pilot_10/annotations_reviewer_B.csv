@@ -1,0 +1,11 @@
+case_id,source_task_id,reviewer,review_date,task_outcome,gap_status,missing_capability,evidence_references,alternatives_considered,information_missing,notes
+case_01,68993ef3cf3e953b8ab83f8b,,,,,,,,,
+case_02,688a441c1a0d2e5c93853e93,,,,,,,,,
+case_03,689bd255c0422b257e7dfca9,,,,,,,,,
+case_04,689bd255c0422b257e7dfce2,,,,,,,,,
+case_05,689bd255c0422b257e7dfcb1,,,,,,,,,
+case_06,68834223448b8fe04df2a592,,,,,,,,,
+case_07,689bd255c0422b257e7dfcd7,,,,,,,,,
+case_08,68a398aa2f58036e8d45edd4,,,,,,,,,
+case_09,689af4e653c3905e7b5b2593,,,,,,,,,
+case_10,689bd255c0422b257e7dfcae,,,,,,,,,

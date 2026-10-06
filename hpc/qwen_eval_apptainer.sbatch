@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --time=04:00:00
+#SBATCH --time=12:00:00
 #SBATCH --output=outputs/hpc/qwen-eval-%j.out
 #SBATCH --error=outputs/hpc/qwen-eval-%j.err
 
@@ -62,9 +62,7 @@ unset PIP_REQUIRE_VIRTUALENV
 python --version
 python -m pip install -e .
 
-python -m src.evaluate \
-  --traces data/live_realtime_traces_qwen3_clean.jsonl \
-  --method llm-fair capmatch-fair \
-  --split all \
-  --label-clean-controls \
-  --save-predictions
+python scripts/evaluate_controlled_gap_pilot.py \
+  --traces outputs/traces/live_realtime_120_traces_qwen3.jsonl \
+  --output-dir outputs/controlled_gap_pilot_120 \
+  --method llm-fair capmatch-fair

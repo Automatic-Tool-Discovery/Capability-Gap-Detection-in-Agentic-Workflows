@@ -1,54 +1,35 @@
-# Paper Plan: Capability Gap Detection in Agentic Workflows
+# Report outline and evidence limits
 
-## Step 1: Build the capability-gap dataset
-Reuse AgentRx + MCP-Atlas traces, relabeled into the F0–F8 taxonomy (F6 = missing capability).
-**Status: done.**
+This is the writing outline for the current project scope. Use generated, saved pilot outputs for numeric results; do not copy numbers from historical all-split summaries into a held-out-results table.
 
-## Step 2: Find the best detection approach
-Compare candidate methods for spotting F6 (missing capability) failures:
-- Pure symbolic/rule-based matching — tried, removed (misses semantic gaps)
-- Pure LLM-as-judge (baseline, mirrors AgentRx)
-- Hybrid: LLM extracts required capabilities → deterministic set comparison against available tools
-**Status: hybrid approach implemented (`capability_matcher.py`). On the six labeled
-live F6 traces, the fair hybrid scored gap-detection F1 = 1.000 versus 0.909 for
-the pure-LLM baseline (July 28 run; see `outputs/evaluation/summary_all.json`).**
+## 1. Problem and scope
 
-## Step 3: Evaluate the detection approach
-Score all methods with the same metrics (accuracy, F1, binary gap-detection F1) under fair conditions (no answer-key hints).
-**Status: all-split live result recorded.** Broader random/CV results still require
-a dataset containing enough labeled non-F6 examples; the current live controls
-are intentionally unlabeled and therefore excluded from scoring.
+Define F6 as a task requiring an ability unavailable through the agent's offered tools or valid substitutes. Separate literal capability absence from execution errors, bad parameters, policy restrictions, missing user information, and model knowledge failures.
 
-## Step 4: Produce a capability request
-On a detected gap, output a structured spec of the missing tool (name, inputs, outputs, rationale) — not just a label.
-**Status: implemented, but only logged, not scored.**
+## 2. Methods
 
-## Step 5: Evaluate capability request quality
-Check whether the generated capability spec is actually correct and usable (not just whether F6 was detected).
-**Status: implemented.** For traces with benchmark-known withheld capabilities,
-report capability precision/recall/F1, exact set match, request coverage, and
-schema completeness. Natural-language quality and executable-tool validation
-remain limitations requiring human review or a tool-synthesis experiment.
+Describe the shared model-visible evidence and compare `llm-fair` with `capmatch-fair`. State that both methods see the same task, offered tool inventory and schemas, recorded tool calls/results, plan, and final response, while bookkeeping IDs, gold fields, and withheld-tool metadata are excluded. Explain that the capability matcher converts task requirements into an available-versus-missing comparison and may emit a structured request.
 
-## Step 6: Build a demo system
-A small interactive tool with two ways in, feeding the same classify → evaluate pipeline:
+## 3. Evaluation
 
-**6a. Live mode (end-to-end)**
-User asks a question, with some tools available → `src/live_agent.py` runs the agent
-live and produces a trace → pipeline classifies it (F0–F8) → if F6, shows the generated
-capability request.
-- Proves the whole system works, not just the classifier
-- Good for paper demo / screenshots
-- Reuses the existing live-agent generator; needs a single-question entry point
-  instead of a batch task file (`data/live_tasks.json`)
+Present the project-authored 120-prompt paired tool-withholding study as a **controlled pilot**. Give the number of completed pairs, six family clusters, missing runs, model/runtime details, and assigned-condition confusion matrices. Measure precision, recall, F1, failure/coverage, per-family behavior, and request quality only where a defensible reference target exists. Keep natural-source screening in a separate dataset-feasibility section.
 
-**6b. Trace-replay mode (debugging)**
-User picks or pastes an existing trace (with a known gold label) → pipeline classifies it
-→ shows predicted label + capability request next to the gold answer.
-- No LLM call needed to regenerate an agent run — faster, deterministic
-- Lets you replay a specific failing case to debug *why* it was misclassified
-- Needed for Step 5: comparing generated capability requests against known-good ones
+## 4. Data feasibility and limitations
 
-**Status: implemented in `src/demo.py`.** It accepts either one recorded trace
-(`--trace`, optionally `--trace-id`) or one live question (`--question`, optionally
-`--available-tools`) and displays the prediction and capability request.
+The natural-source review indexed 2,414 records and screened 124 keyword hits. It found zero verified natural F6 positives and 12 unresolved boundary cases. Explain that the review was an assistant desk screen rather than independent human adjudication, and that unresolved cases are not gold labels. MCP-Atlas records are reference task trajectories, not verified failure cases. See the detailed [natural-source report](natural_gap_collection_2026-10-06.md) and [MCP-Atlas audit](mcp_atlas_200_audit.md).
+
+## 5. Results and interpretation
+
+Interpret pilot results only as recognition of the assigned intervention in this constructed suite. Report sample size and clustering alongside every metric. Avoid claims of natural-failure performance, broad generalization, or superiority based on historical scores whose training and test examples overlap.
+
+## 6. Conclusion
+
+Summarize what the implementation demonstrates, what the controlled pilot supports, and what remains untested: natural F6 performance, independent adjudication, generalization across capability families, and semantic correctness/buildability of generated tool requests.
+
+## Reproducibility checklist
+
+- Keep raw traces, run manifest, predictions, and summary together.
+- Record model/provider/revision, prompts, code revision, task suite, timestamps, and failures.
+- Preserve unresolved annotations as unresolved; do not infer task success from control condition or failure from withholding condition.
+- Generate report tables from the saved predictions and evaluator output.
+- Keep historical artifacts clearly marked and do not overwrite them with new metric versions.

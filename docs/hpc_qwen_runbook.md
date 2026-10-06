@@ -1,22 +1,26 @@
-# HPC Qwen Real-Time Dataset Runbook
+# HPC Qwen Controlled Pilot Runbook
 
-Date: 2026-08-22
+Date: 2026-10-06
 
 ## Goal
 
-Run the Qwen3 real-time trace generation job on TU Dresden HPC because one local
-full run takes about 45 minutes.
+Run the expanded Qwen3 controlled pilot on TU Dresden HPC. The `realtime_120`
+suite contains 120 prompts, balanced as 20 per family across six families. Each
+task is run once with all tools and once with its target capability withheld,
+for up to 240 raw traces. The 120 prompts are clustered within six capabilities
+and should not be reported as 120 independent capability families.
 
 ## Local Preparation
 
 Commit or copy these project files to HPC:
 
-- `data/live_realtime_tasks.json`
-- `data/live_realtime_replacement_tasks.json`
+- `data/live_task_suites.json`
 - `mcp_servers/research_tools/server.py`
 - `src/`
 - `scripts/`
 - `hpc/qwen_realtime_dataset.sbatch`
+- `hpc/qwen_eval_apptainer.sbatch`
+- `scripts/evaluate_controlled_gap_pilot.py`
 - `pyproject.toml`
 
 ## First Login
@@ -82,29 +86,35 @@ tail -f outputs/hpc/qwen-realtime-<jobid>.out
 
 ## Expected Result
 
-The job should produce a Qwen trace file under `data/` and then build:
+The generation job requests up to eight hours and should produce the paired,
+unreviewed trace file:
 
 ```text
-data/live_realtime_traces_qwen3_clean.jsonl
+outputs/traces/live_realtime_120_traces_qwen3.jsonl
 ```
 
-Expected quality:
+Expected structure:
 
 ```text
-traces=60 controls=30 gaps=30
-bad_controls=[]
-gap_with_calls=[]
+120 task IDs, each with one control and one gap trace (240 total)
 ```
 
-## Then Evaluate
+These traces do not have F0/F6 outcome labels. The assigned condition records
+which tool was withheld; it does not prove a natural failure. Evaluate this
+controlled intervention with:
 
 ```bash
-python -m src.evaluate \
-  --traces data/live_realtime_traces_qwen3_clean.jsonl \
-  --method llm-fair capmatch-fair \
-  --split all \
-  --save-predictions
+python scripts/evaluate_controlled_gap_pilot.py \
+  --traces outputs/traces/live_realtime_120_traces_qwen3.jsonl \
+  --output-dir outputs/controlled_gap_pilot_120 \
+  --method llm-fair capmatch-fair
 ```
+
+The evaluator measures detection of the assigned withheld-tool condition, not
+task success or natural F6 prevalence. It saves per-method predictions and
+completed-case and failure-inclusive scores, confusion matrices, and
+per-family results. The evaluation job requests up to twelve hours; actual
+runtime depends on the model and cluster.
 
 ## Barnard Apptainer Fallback
 

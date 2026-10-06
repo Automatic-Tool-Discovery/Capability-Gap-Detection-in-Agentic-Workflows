@@ -3,8 +3,10 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
+.ruff_cache/
 
 # Virtual envs
+.venv*/
 .venv/
 venv/
 env/
@@ -16,6 +18,18 @@ env/
 # HuggingFace / model caches
 .cache/
 *.lock
+data/ollama/
+
+# Generated experiment outputs
+outputs/traces/*
+!outputs/traces/.gitkeep
+outputs/evaluation/*
+!outputs/evaluation/.gitkeep
+outputs/mcp_atlas_runs/*
+!outputs/mcp_atlas_runs/.gitkeep
 
 # OS
 .DS_Store
+
+# Local source snapshots and candidate reviews; do not redistribute raw datasets.
+outputs/review/natural_gap_search_2026-10-05/

@@ -1,7 +1,8 @@
 """Build the cleaned real-time Qwen dataset.
 
 This removes the flaky India holidays pair and, when available, replaces it with
-the Canada holidays pair generated from data/live_realtime_replacement_tasks.json.
+the Canada holidays pair generated from the replacement suite in
+data/live_task_suites.json.
 """
 
 from __future__ import annotations
@@ -9,9 +10,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-RAW_PATH = Path("data/live_realtime_traces_qwen3.jsonl")
-REPLACEMENT_PATH = Path("data/live_realtime_replacement_traces_qwen3.jsonl")
-CLEAN_PATH = Path("data/live_realtime_traces_qwen3_clean.jsonl")
+RAW_PATH = Path("outputs/traces/live_realtime_traces_qwen3.jsonl")
+REPLACEMENT_PATH = Path("outputs/traces/live_realtime_replacement_traces_qwen3.jsonl")
+CLEAN_PATH = Path("outputs/traces/live_realtime_traces_qwen3_clean.jsonl")
 DROP_PREFIXES = {
     "live_rt_holidays_in_2026_control",
     "live_rt_holidays_in_2026_gap",

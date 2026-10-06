@@ -197,7 +197,7 @@ class CapabilityGapCoreTests(unittest.TestCase):
         self.assertTrue(capabilities_match("search_emails", "email_search"))
         self.assertFalse(capabilities_match("send_email", "search_emails"))
 
-    def test_loader_backfills_ground_truth_for_legacy_live_trace(self):
+    def test_loader_preserves_legacy_label_without_inventing_capability_gold(self):
         trace = AgentTrace(
             trace_id="legacy_gap",
             user_task="Need weather.",
@@ -214,7 +214,9 @@ class CapabilityGapCoreTests(unittest.TestCase):
             path.write_text(trace.model_dump_json() + "\n", encoding="utf-8")
             loaded = load_traces([path])
 
-        self.assertEqual(loaded[0].gold_missing_capabilities, ["weather_api"])
+        self.assertEqual(loaded[0].gold_missing_capabilities, [])
+        self.assertEqual(loaded[0].gold_label, F6)
+        self.assertEqual(loaded[0].annotation.status, "legacy")
 
     def test_export_mcp_atlas_ablation_inputs_writes_baseline_and_ablated_csvs(self):
         with tempfile.TemporaryDirectory() as tmp:

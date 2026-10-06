@@ -17,6 +17,7 @@ from typing import Any, Callable
 from src.model_config import get_model_config
 from src.schemas import AgentTrace, Prediction
 from src.taxonomy import FailureType
+from src.trace_evidence import trace_evidence
 
 DEFAULT_MODEL = "alias-ha"
 VALID_LABELS = [failure.value for failure in FailureType]
@@ -44,20 +45,7 @@ Return JSON only with keys:
 
 
 def trace_payload(trace: AgentTrace, *, use_failure_explanation: bool) -> dict[str, Any]:
-    payload: dict[str, Any] = {
-        "trace_id": trace.trace_id,
-        "user_task": trace.user_task,
-        "available_tools": trace.available_tools,
-        "agent_plan": trace.agent_plan,
-        "tool_calls": [call.model_dump() for call in trace.tool_calls],
-        "final_response": trace.final_response,
-        "mcp_servers": trace.mcp_servers,
-    }
-    if use_failure_explanation and trace.failure_explanation:
-        payload["failure_explanation"] = trace.failure_explanation
-    if trace.tool_schemas:
-        payload["tool_schemas"] = trace.tool_schemas
-    return payload
+    return trace_evidence(trace, use_failure_explanation=use_failure_explanation)
 
 
 def _parse_json_response(content: str) -> dict[str, Any]:
