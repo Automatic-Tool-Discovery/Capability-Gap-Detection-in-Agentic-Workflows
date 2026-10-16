@@ -1,0 +1,608 @@
+{
+  "version": 2,
+  "default_suite": "realtime_120_v2",
+  "suites": {
+    "realtime_120_v2": [
+      {
+        "task_id": "pilot120v2_weather_berlin",
+        "user_task": "Use a live weather source to report the current temperature and wind speed in Berlin.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_dresden",
+        "user_task": "What temperature and wind speed does the live forecast report right now for Dresden?",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_london",
+        "user_task": "Check current conditions for London; include the reported temperature, wind, and observation time.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_tokyo",
+        "user_task": "Look up live weather in Tokyo and give me the current temperature and wind speed.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_new_york",
+        "user_task": "From a current weather feed, tell me the temperature and wind speed in New York.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_san_francisco",
+        "user_task": "Use a live weather source to report the current temperature and wind speed in San Francisco.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_paris",
+        "user_task": "What temperature and wind speed does the live forecast report right now for Paris?",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_rome",
+        "user_task": "Check current conditions for Rome; include the reported temperature, wind, and observation time.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_madrid",
+        "user_task": "Look up live weather in Madrid and give me the current temperature and wind speed.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_toronto",
+        "user_task": "From a current weather feed, tell me the temperature and wind speed in Toronto.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_vancouver",
+        "user_task": "Use a live weather source to report the current temperature and wind speed in Vancouver.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_sydney",
+        "user_task": "What temperature and wind speed does the live forecast report right now for Sydney?",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_melbourne",
+        "user_task": "Check current conditions for Melbourne; include the reported temperature, wind, and observation time.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_delhi",
+        "user_task": "Look up live weather in Delhi and give me the current temperature and wind speed.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_mumbai",
+        "user_task": "From a current weather feed, tell me the temperature and wind speed in Mumbai.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_singapore",
+        "user_task": "Use a live weather source to report the current temperature and wind speed in Singapore.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_seoul",
+        "user_task": "What temperature and wind speed does the live forecast report right now for Seoul?",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_amsterdam",
+        "user_task": "Check current conditions for Amsterdam; include the reported temperature, wind, and observation time.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_nairobi",
+        "user_task": "Look up live weather in Nairobi and give me the current temperature and wind speed.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_weather_cairo",
+        "user_task": "From a current weather feed, tell me the temperature and wind speed in Cairo.",
+        "required_tool": "realtime_weather"
+      },
+      {
+        "task_id": "pilot120v2_fx_usd_eur",
+        "user_task": "Get the latest live USD/EUR exchange rate and state its date.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_eur_inr",
+        "user_task": "What is the current rate for one EUR in INR? Use a live source.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_gbp_usd",
+        "user_task": "Look up today’s GBP to USD exchange rate and report the source date.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_usd_jpy",
+        "user_task": "Check a live currency feed: how many JPY equal one USD?",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_chf_eur",
+        "user_task": "Find the latest available CHF-EUR conversion rate, including its date.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_usd_chf",
+        "user_task": "Get the latest live USD/CHF exchange rate and state its date.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_eur_gbp",
+        "user_task": "What is the current rate for one EUR in GBP? Use a live source.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_cad_usd",
+        "user_task": "Look up today’s CAD to USD exchange rate and report the source date.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_aud_usd",
+        "user_task": "Check a live currency feed: how many USD equal one AUD?",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_nzd_usd",
+        "user_task": "Find the latest available NZD-USD conversion rate, including its date.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_eur_jpy",
+        "user_task": "Get the latest live EUR/JPY exchange rate and state its date.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_gbp_eur",
+        "user_task": "What is the current rate for one GBP in EUR? Use a live source.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_usd_cad",
+        "user_task": "Look up today’s USD to CAD exchange rate and report the source date.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_usd_aud",
+        "user_task": "Check a live currency feed: how many AUD equal one USD?",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_usd_sek",
+        "user_task": "Find the latest available USD-SEK conversion rate, including its date.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_usd_nok",
+        "user_task": "Get the latest live USD/NOK exchange rate and state its date.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_usd_dkk",
+        "user_task": "What is the current rate for one USD in DKK? Use a live source.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_usd_pln",
+        "user_task": "Look up today’s USD to PLN exchange rate and report the source date.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_usd_sgd",
+        "user_task": "Check a live currency feed: how many SGD equal one USD?",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_fx_usd_mxn",
+        "user_task": "Find the latest available USD-MXN conversion rate, including its date.",
+        "required_tool": "realtime_exchange_rate"
+      },
+      {
+        "task_id": "pilot120v2_quake_m40",
+        "user_task": "Check the current USGS significant-earthquake daily feed and list events at or above magnitude 4.0.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m41",
+        "user_task": "From today’s USGS significant-earthquake feed, report entries with magnitude at least 4.1.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m42",
+        "user_task": "Look up significant earthquakes in the current USGS daily feed, filtering for M4.2 or greater.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m43",
+        "user_task": "Use the live USGS feed to find significant events whose magnitude is no lower than 4.3.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m44",
+        "user_task": "Are there any significant earthquakes in the current USGS feed at magnitude 4.4 or above? List them.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m45",
+        "user_task": "Check the current USGS significant-earthquake daily feed and list events at or above magnitude 4.5.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m46",
+        "user_task": "From today’s USGS significant-earthquake feed, report entries with magnitude at least 4.6.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m47",
+        "user_task": "Look up significant earthquakes in the current USGS daily feed, filtering for M4.7 or greater.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m48",
+        "user_task": "Use the live USGS feed to find significant events whose magnitude is no lower than 4.8.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m49",
+        "user_task": "Are there any significant earthquakes in the current USGS feed at magnitude 4.9 or above? List them.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m50",
+        "user_task": "Check the current USGS significant-earthquake daily feed and list events at or above magnitude 5.0.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m51",
+        "user_task": "From today’s USGS significant-earthquake feed, report entries with magnitude at least 5.1.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m52",
+        "user_task": "Look up significant earthquakes in the current USGS daily feed, filtering for M5.2 or greater.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m53",
+        "user_task": "Use the live USGS feed to find significant events whose magnitude is no lower than 5.3.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m54",
+        "user_task": "Are there any significant earthquakes in the current USGS feed at magnitude 5.4 or above? List them.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m55",
+        "user_task": "Check the current USGS significant-earthquake daily feed and list events at or above magnitude 5.5.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m56",
+        "user_task": "From today’s USGS significant-earthquake feed, report entries with magnitude at least 5.6.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m57",
+        "user_task": "Look up significant earthquakes in the current USGS daily feed, filtering for M5.7 or greater.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m58",
+        "user_task": "Use the live USGS feed to find significant events whose magnitude is no lower than 5.8.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_quake_m59",
+        "user_task": "Are there any significant earthquakes in the current USGS feed at magnitude 5.9 or above? List them.",
+        "required_tool": "realtime_earthquakes"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_01",
+        "user_task": "Find the International Space Station’s current latitude, longitude, and timestamp from a live source.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_02",
+        "user_task": "Where is the ISS right now? Give the live coordinates and timestamp.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_03",
+        "user_task": "Look up the current ISS position and report both coordinates plus the returned timestamp.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_04",
+        "user_task": "Retrieve the present latitude and longitude of the International Space Station (ISS) and include when they were recorded.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_05",
+        "user_task": "Check a live ISS tracker and tell me its current position and data timestamp.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_06",
+        "user_task": "What coordinates does the live source give for the International Space Station now? Include its timestamp.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_07",
+        "user_task": "Report the ISS’s current location as latitude and longitude, with the source timestamp.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_08",
+        "user_task": "Use a live position feed to locate the ISS and include the feed’s timestamp.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_09",
+        "user_task": "Get the current ISS position from an online source; provide latitude, longitude, and time.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_10",
+        "user_task": "Give me the live coordinates of the orbiting ISS and the timestamp returned with them.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_11",
+        "user_task": "Find where the ISS is at this moment and include the recorded time.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_12",
+        "user_task": "Look up the International Space Station (ISS)’s present coordinates and report the returned timestamp as well.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_13",
+        "user_task": "Query a live ISS position feed for latitude, longitude, and timestamp.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_14",
+        "user_task": "Tell me the International Space Station’s current geographic position using live data.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_15",
+        "user_task": "Retrieve the ISS’s latest location coordinates and when that location was recorded.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_16",
+        "user_task": "Check where the International Space Station (ISS) is now; include latitude, longitude, and timestamp from the feed.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_17",
+        "user_task": "Use current tracking data to report the ISS position and its timestamp.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_18",
+        "user_task": "What are the latest latitude and longitude readings for the ISS? Include their timestamp.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_19",
+        "user_task": "Find the current position of the International Space Station (ISS) from a live tracker and state the time.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_iss_position_20",
+        "user_task": "Return the live ISS latitude, longitude, and timestamp.",
+        "required_tool": "realtime_iss_position"
+      },
+      {
+        "task_id": "pilot120v2_holiday_de_2026",
+        "user_task": "Use the public-holidays API to list the first five public holidays in Germany for 2026.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_us_2027",
+        "user_task": "Check a live holiday source and give the first few United States public holidays in 2027.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_ca_2026",
+        "user_task": "What are the first five listed public holidays for Canada in 2026? Retrieve them from the API.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_gb_2027",
+        "user_task": "Look up the public-holiday calendar for Great Britain in 2027 and report its first five entries.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_jp_2026",
+        "user_task": "From a current holidays API, return the earliest public holidays listed for Japan in 2026.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_fr_2027",
+        "user_task": "Use the public-holidays API to list the first five public holidays in France for 2027.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_au_2026",
+        "user_task": "Check a live holiday source and give the first few Australia public holidays in 2026.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_in_2027",
+        "user_task": "What are the first five listed public holidays for India in 2027? Retrieve them from the API.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_nz_2026",
+        "user_task": "Look up the public-holiday calendar for New Zealand in 2026 and report its first five entries.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_br_2027",
+        "user_task": "From a current holidays API, return the earliest public holidays listed for Brazil in 2027.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_it_2026",
+        "user_task": "Use the public-holidays API to list the first five public holidays in Italy for 2026.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_es_2027",
+        "user_task": "Check a live holiday source and give the first few Spain public holidays in 2027.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_nl_2026",
+        "user_task": "What are the first five listed public holidays for Netherlands in 2026? Retrieve them from the API.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_se_2027",
+        "user_task": "Look up the public-holiday calendar for Sweden in 2027 and report its first five entries.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_no_2026",
+        "user_task": "From a current holidays API, return the earliest public holidays listed for Norway in 2026.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_ch_2027",
+        "user_task": "Use the public-holidays API to list the first five public holidays in Switzerland for 2027.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_at_2026",
+        "user_task": "Check a live holiday source and give the first few Austria public holidays in 2026.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_be_2027",
+        "user_task": "What are the first five listed public holidays for Belgium in 2027? Retrieve them from the API.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_pt_2026",
+        "user_task": "Look up the public-holiday calendar for Portugal in 2026 and report its first five entries.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_holiday_ie_2027",
+        "user_task": "From a current holidays API, return the earliest public holidays listed for Ireland in 2027.",
+        "required_tool": "public_holidays"
+      },
+      {
+        "task_id": "pilot120v2_book_dune",
+        "user_task": "Search Open Library for books titled “Dune” and report the top matches.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_foundation",
+        "user_task": "Find live Open Library records for “Foundation”; include the matching titles and authors.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_the_hobbit",
+        "user_task": "Look up “The Hobbit” in Open Library and summarize up to three results.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_frankenstein",
+        "user_task": "Use the Open Library catalog to find books matching “Frankenstein”.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_sapiens",
+        "user_task": "Retrieve the top Open Library search results for the title “Sapiens”.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_pride_and_prejudice",
+        "user_task": "Search Open Library for books titled “Pride and Prejudice” and report the top matches.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_1984",
+        "user_task": "Find live Open Library records for “1984”; include the matching titles and authors.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_the_left_hand_of_darkness",
+        "user_task": "Look up “The Left Hand of Darkness” in Open Library and summarize up to three results.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_beloved",
+        "user_task": "Use the Open Library catalog to find books matching “Beloved”.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_the_dispossessed",
+        "user_task": "Retrieve the top Open Library search results for the title “The Dispossessed”.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_the_name_of_the_rose",
+        "user_task": "Search Open Library for books titled “The Name of the Rose” and report the top matches.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_invisible_cities",
+        "user_task": "Find live Open Library records for “Invisible Cities”; include the matching titles and authors.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_one_hundred_years_of_solitude",
+        "user_task": "Look up “One Hundred Years of Solitude” in Open Library and summarize up to three results.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_the_three_body_problem",
+        "user_task": "Use the Open Library catalog to find books matching “The Three-Body Problem”.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_kindred",
+        "user_task": "Retrieve the top Open Library search results for the title “Kindred”.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_the_odyssey",
+        "user_task": "Search Open Library for books titled “The Odyssey” and report the top matches.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_middlemarch",
+        "user_task": "Find live Open Library records for “Middlemarch”; include the matching titles and authors.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_the_trial",
+        "user_task": "Look up “The Trial” in Open Library and summarize up to three results.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_a_wizard_of_earthsea",
+        "user_task": "Use the Open Library catalog to find books matching “A Wizard of Earthsea”.",
+        "required_tool": "open_library_search"
+      },
+      {
+        "task_id": "pilot120v2_book_the_handmaid_s_tale",
+        "user_task": "Retrieve the top Open Library search results for the title “The Handmaid’s Tale”.",
+        "required_tool": "open_library_search"
+      }
+    ]
+  }
+}

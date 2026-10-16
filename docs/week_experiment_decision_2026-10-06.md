@@ -1,5 +1,9 @@
 # Experiment and submission plan (October 6–9, 2026)
 
+## Completed run — October 16
+
+The controlled pilot has now completed on Capella: 240 traces, 120 complete pairs, and six capability families. Saved predictions reproduce gap F1 of 0.9917 for `llm-fair` and 0.9836 for `capmatch-fair`, with no classifier exceptions. There were four recorded tool-call errors during generation; controls are not verified successes. See the [verified results and false-positive review](controlled_pilot_results_2026-10-16.md). The original plan and historical-result caveats below are retained for context.
+
 ## Decision
 
 Do not wait for a large natural F6 dataset. The source review indexed 2,414 records but found **zero verified natural F6 positives**. Twelve media/file cases remain unresolved. This means none currently has enough evidence to confidently attribute failure to a necessary ability missing from the agent's complete toolset. Do not count those cases as positives or negatives.
